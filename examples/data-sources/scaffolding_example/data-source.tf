@@ -1,3 +1,12 @@
-data "scaffolding_example" "example" {
-  configurable_attribute = "some-value"
+terraform {
+  required_providers {
+    openai = {
+      source = "skyscrapr/openai"
+    }
+  }
+}
+
+provider "openai" {}
+
+data "openai_models" "test" {
 }

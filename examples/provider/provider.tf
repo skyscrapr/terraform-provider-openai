@@ -1,3 +1,9 @@
-provider "scaffolding" {
-  # example configuration here
+terraform {
+  required_providers {
+    openai = {
+      source = "skyscrapr/openai"
+    }
+  }
 }
+
+provider "openai" {}
