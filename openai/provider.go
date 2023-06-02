@@ -38,7 +38,7 @@ func (p *OpenAIProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"auth_token": schema.StringAttribute{
-				Required:  true,
+				Optional:  true,
 				Sensitive: true,
 			},
 		},
