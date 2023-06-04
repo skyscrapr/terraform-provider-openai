@@ -1,4 +1,4 @@
-package provider
+package openai
 
 import (
 	"context"
@@ -140,7 +140,7 @@ func openAIModelAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "Model Identifier",
-			Computed:            true,
+			Required:            true,
 		},
 		"created": schema.Int64Attribute{
 			MarkdownDescription: "Created Time",
