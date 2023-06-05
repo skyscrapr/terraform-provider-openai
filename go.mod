@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
+	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/skyscrapr/openai-sdk-go v0.0.0-20230605035432-1a421fab9922
 )
 
