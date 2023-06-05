@@ -76,6 +76,7 @@ jobs:
           terraform_wrapper: false
       - run: go mod download
       - env:
+          OPENAI_AUTH_TOKEN: ${{ secrets.OPENAI_AUTH_TOKEN }}
           TF_ACC: "1"
         run: go test -v -cover ./openai/
         timeout-minutes: 10
