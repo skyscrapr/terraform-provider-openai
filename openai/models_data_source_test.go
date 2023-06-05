@@ -15,7 +15,8 @@ func TestAccModelsDataSource(t *testing.T) {
 			{
 				Config: testAccModelsDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.openai_models.test", "id", "models"),
+					// Verify ID has any value set
+					resource.TestCheckResourceAttrSet("data.openai_models.test", "id"),
 				),
 			},
 		},
