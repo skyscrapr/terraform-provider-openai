@@ -55,7 +55,7 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/russross/blackfriday v1.6.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
-	github.com/skyscrapr/openai-sdk-go v0.0.0-20230530233315-b0ce2ead90fa
+	github.com/skyscrapr/openai-sdk-go v0.0.0-20230605034137-055ea95bc2e4
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
