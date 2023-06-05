@@ -17,7 +17,7 @@ var _ resource.Resource = &FileResource{}
 var _ resource.ResourceWithImportState = &FileResource{}
 
 func NewFileResource() resource.Resource {
-	return &FileResource{}
+	return &FileResource{OpenAIResource: &OpenAIResource{}}
 }
 
 // FileResource defines the resource implementation.
@@ -57,7 +57,7 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"purpose": schema.StringAttribute{
 				MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
-				Optional:            true,
+				Computed:            true,
 				Default:             stringdefault.StaticString("fine-tune"),
 			},
 		},

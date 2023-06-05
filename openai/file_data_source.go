@@ -12,7 +12,7 @@ import (
 var _ datasource.DataSource = &ModelDataSource{}
 
 func NewFileDataSource() datasource.DataSource {
-	return &FileDataSource{}
+	return &FileDataSource{OpenAIDatasource: &OpenAIDatasource{}}
 }
 
 // DataSource defines the data source implementation.
@@ -21,7 +21,7 @@ type FileDataSource struct {
 }
 
 func (d *FileDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "file"
+	resp.TypeName = req.ProviderTypeName + "_file"
 }
 
 func (d *FileDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

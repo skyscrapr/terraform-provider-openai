@@ -17,7 +17,7 @@ type OpenAIFileModel struct {
 	Created  types.Int64  `tfsdk:"created"`
 	Filename types.String `tfsdk:"filename"`
 	Object   types.String `tfsdk:"object"`
-	Purpose  types.String `tfsdk:"fine-tune"`
+	Purpose  types.String `tfsdk:"purpose"`
 }
 
 func NewOpenAIFileModel(f *openai.File) OpenAIFileModel {
@@ -58,7 +58,7 @@ type OpenAIResource struct {
 	client *openai.Client
 }
 
-func (d *OpenAIResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *OpenAIResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return

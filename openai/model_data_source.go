@@ -15,7 +15,7 @@ import (
 var _ datasource.DataSource = &ModelDataSource{}
 
 func NewModelDataSource() datasource.DataSource {
-	return &ModelDataSource{}
+	return &ModelDataSource{OpenAIDatasource: &OpenAIDatasource{}}
 }
 
 // ModelDataSource defines the data source implementation.
