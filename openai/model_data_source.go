@@ -20,7 +20,7 @@ func NewModelDataSource() datasource.DataSource {
 
 // ModelDataSource defines the data source implementation.
 type ModelDataSource struct {
-	client *openai.Client
+	*OpenAIDatasource
 }
 
 // ModelDataSourceModel describes the data source data model.
@@ -77,25 +77,6 @@ func (d *ModelDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 
 		Attributes: openAIModelAttributes(),
 	}
-}
-
-func (d *ModelDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*openai.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *openai.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-
-	d.client = client
 }
 
 func (d *ModelDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

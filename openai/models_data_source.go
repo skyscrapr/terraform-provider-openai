@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/skyscrapr/openai-sdk-go/openai"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -21,7 +20,7 @@ func NewModelsDataSource() datasource.DataSource {
 
 // ModelsDataSource defines the data source implementation.
 type ModelsDataSource struct {
-	client *openai.Client
+	*OpenAIDatasource
 }
 
 // ModelsDataSourceModel describes the data source data model.
@@ -53,25 +52,6 @@ func (d *ModelsDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			},
 		},
 	}
-}
-
-func (d *ModelsDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*openai.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *openai.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-
-	d.client = client
 }
 
 func (d *ModelsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

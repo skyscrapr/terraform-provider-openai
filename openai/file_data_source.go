@@ -6,8 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/skyscrapr/openai-sdk-go/openai"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -19,17 +17,7 @@ func NewFileDataSource() datasource.DataSource {
 
 // DataSource defines the data source implementation.
 type FileDataSource struct {
-	client *openai.Client
-}
-
-// ModelDataSourceModel describes the data source data model.
-type FileDataSourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	Bytes    types.Int64  `tfsdk:"bytes"`
-	Created  types.Int64  `tfsdk:"created"`
-	Filename types.String `tfsdk:"filename"`
-	Object   types.String `tfsdk:"object"`
-	Purpose  types.String `tfsdk:"fine-tune"`
+	*OpenAIDatasource
 }
 
 func (d *FileDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -45,27 +33,8 @@ func (d *FileDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 	}
 }
 
-func (d *FileDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*openai.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *openai.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-
-	d.client = client
-}
-
 func (d *FileDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data FileDataSourceModel
+	var data OpenAIFileModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -81,22 +50,10 @@ func (d *FileDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	data = NewFileDataSourceModel(file)
+	data = NewOpenAIFileModel(file)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func NewFileDataSourceModel(f *openai.File) FileDataSourceModel {
-	fileDataSourceModel := FileDataSourceModel{
-		Id:       types.StringValue(f.Id),
-		Bytes:    types.Int64Value(f.Bytes),
-		Created:  types.Int64Value(f.CreatedAt),
-		Filename: types.StringValue(f.Filename),
-		Object:   types.StringValue(f.Object),
-		Purpose:  types.StringValue(f.Purpose),
-	}
-	return fileDataSourceModel
 }
 
 func openAIFileAttributes() map[string]schema.Attribute {
