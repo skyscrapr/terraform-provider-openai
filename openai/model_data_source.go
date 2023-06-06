@@ -112,7 +112,6 @@ func NewModelDataSourceModel(model *openai.Model) ModelDataSourceModel {
 		Root:    types.StringValue(model.Root),
 	}
 
-	// var permissions []types.Object
 	var permissions = make([]ModelPermissionModel, len(model.Permission))
 	for i, p := range model.Permission {
 		permission := ModelPermissionModel{
@@ -131,9 +130,8 @@ func NewModelDataSourceModel(model *openai.Model) ModelDataSourceModel {
 		}
 		permissions[i] = permission
 	}
-
 	modelDataSourceModel.Permissions, _ = types.ListValueFrom(context.TODO(), types.ObjectType{AttrTypes: ModelPermissionModel{}.AttrTypes()}, permissions)
-	//modelDataSourceModel.Permissions = permissions
+
 	return modelDataSourceModel
 }
 
