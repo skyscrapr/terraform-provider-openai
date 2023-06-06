@@ -8,9 +8,7 @@ terraform {
 
 provider "openai" {}
 
-data "openai_files" "test" {
+data "openai_model" "test" {
+  id = "whisper-1"
 }
 
-data "openai_file" "test" {
-  id = "1"
-}
