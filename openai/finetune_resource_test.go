@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccFileResource(t *testing.T) {
+func TestAccFineTuneResource(t *testing.T) {
 	t.Skip("TODO")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -15,16 +15,16 @@ func TestAccFileResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccFileResourceConfig("test.txt"),
+				Config: testAccFineTuneResourceConfig("test.txt"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("openai_file.test", "id"),
-					resource.TestCheckResourceAttr("openai_file.test", "filename", "test.txt"),
-					resource.TestCheckResourceAttr("openai_file.test", "purpose", "fine-tune"),
+					resource.TestCheckResourceAttrSet("openai_finetune.test", "id"),
+					resource.TestCheckResourceAttr("openai_finetune.test", "filename", "test.txt"),
+					resource.TestCheckResourceAttr("openai_finetune.test", "purpose", "fine-tune"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "openai_file.test",
+				ResourceName:      "openai_finetune.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 				// This is not normally necessary, but is here because this
@@ -45,9 +45,9 @@ func TestAccFileResource(t *testing.T) {
 	})
 }
 
-func testAccFileResourceConfig(configurableAttribute string) string {
+func testAccFineTuneResourceConfig(configurableAttribute string) string {
 	return fmt.Sprintf(`
-resource "openai_file" "test" {
+resource "openai_finetune" "test" {
   filename = %[1]q
 }
 `, configurableAttribute)
