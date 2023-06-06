@@ -12,7 +12,7 @@ import (
 var _ datasource.DataSource = &ModelDataSource{}
 
 func NewFineTuneDataSource() datasource.DataSource {
-	return &FileDataSource{OpenAIDatasource: &OpenAIDatasource{}}
+	return &FineTuneDataSource{OpenAIDatasource: &OpenAIDatasource{}}
 }
 
 // FineTineDataSource defines the data source implementation.
