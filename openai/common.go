@@ -132,18 +132,18 @@ func NewOpenAIFineTuneModel(ft *openai.FineTune) OpenAIFineTuneModel {
 		Id:             types.StringValue(ft.Id),
 		Object:         types.StringValue(ft.Object),
 		Model:          types.StringValue(ft.Model),
-		Created:        types.Int64Value(int64(ft.CreatedAt)),
+		Created:        types.Int64Value(ft.CreatedAt),
 		FineTunedModel: types.StringValue(ft.FineTunedModel),
 		OrganizationId: types.StringValue(ft.OrganizationId),
 		Status:         types.StringValue(ft.Status),
-		UpdatedAt:      types.Int64Value(int64(ft.CreatedAt)),
+		UpdatedAt:      types.Int64Value(ft.CreatedAt),
 	}
 
 	var events = make([]OpenAIFineTuneEventModel, len(ft.Events))
 	for i, e := range ft.Events {
 		event := OpenAIFineTuneEventModel{
 			Object:  types.StringValue(e.Object),
-			Created: types.Int64Value(int64(e.CreatedAt)),
+			Created: types.Int64Value(e.CreatedAt),
 			Level:   types.StringValue(e.Level),
 			Message: types.StringValue(e.Message),
 		}
@@ -154,9 +154,9 @@ func NewOpenAIFineTuneModel(ft *openai.FineTune) OpenAIFineTuneModel {
 	var hyperparams = make([]OpenAIFineTuneHyperparamModel, len(ft.Hyperparams))
 	for i, h := range ft.Hyperparams {
 		hyperparam := OpenAIFineTuneHyperparamModel{
-			BatchSize:              types.Int64Value(int64(h.BatchSize)),
+			BatchSize:              types.Int64Value(h.BatchSize),
 			LearningRateMultiplier: types.Float64Value(float64(h.LearningRateMultiplier)),
-			NEpochs:                types.Int64Value(int64(h.NEpochs)),
+			NEpochs:                types.Int64Value(h.NEpochs),
 			PromptLossWeight:       types.Float64Value(float64(h.PromptLossWeight)),
 		}
 		hyperparams[i] = hyperparam
