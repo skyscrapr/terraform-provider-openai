@@ -26,5 +26,3 @@ File data source
 - `filename` (String) Filename
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
-
-

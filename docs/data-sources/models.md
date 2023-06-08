@@ -52,5 +52,3 @@ Read-Only:
 - `is_blocking` (Boolean) Is Blocking
 - `object` (String) Object Type
 - `organization` (String) Organization
-
-

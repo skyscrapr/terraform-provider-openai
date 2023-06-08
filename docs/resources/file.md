@@ -26,5 +26,3 @@ File resource
 - `id` (String) File Identifier
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
-
-

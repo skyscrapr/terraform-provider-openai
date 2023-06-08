@@ -59,5 +59,3 @@ Read-Only:
 - `learning_rate_multiplier` (Number) Learning Rate Multipier
 - `n_epochs` (Number) N Epochs
 - `prompt_loss_weight` (Number) Prompt Loss Weight
-
-
