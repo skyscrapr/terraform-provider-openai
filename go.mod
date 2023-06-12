@@ -11,7 +11,7 @@ require (
 
 require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/skyscrapr/openai-sdk-go v0.0.0-20230606084659-1bf4b2390a29
+	github.com/skyscrapr/openai-sdk-go v0.0.0-20230611232602-0411def76396
 )
 
 require (
