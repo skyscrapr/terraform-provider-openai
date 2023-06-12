@@ -29,4 +29,4 @@ provider "openai" {}
 
 ### Optional
 
-- `auth_token` (String, Sensitive)
+- `api_key` (String, Sensitive)

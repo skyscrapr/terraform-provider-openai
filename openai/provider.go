@@ -26,7 +26,7 @@ type OpenAIProvider struct {
 
 // OpenAIProviderModel describes the provider data model.
 type OpenAIProviderModel struct {
-	AuthToken types.String `tfsdk:"auth_token"`
+	ApiKey types.String `tfsdk:"api_key"`
 }
 
 func (p *OpenAIProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -37,7 +37,7 @@ func (p *OpenAIProvider) Metadata(ctx context.Context, req provider.MetadataRequ
 func (p *OpenAIProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"auth_token": schema.StringAttribute{
+			"api_key": schema.StringAttribute{
 				Optional:  true,
 				Sensitive: true,
 			},
@@ -50,12 +50,12 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	if data.AuthToken.IsUnknown() {
+	if data.ApiKey.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("auth_token"),
+			path.Root("api_key"),
 			"Unknown OpenAI Authorization Token",
 			"The provider cannot create the OpenAI API client as there is an unknown configuration value for the OpenAI API authorization token. "+
-				"Either set the value statically in the configuration, or use the OPENAI_AUTH_TOKEN environment variable.",
+				"Either set the value statically in the configuration, or use the OPENAI_API_KEY environment variable.",
 		)
 	}
 
@@ -65,11 +65,11 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Default values to environment variables, but override
 	// with Terraform configuration value if set.
-	auth_token := os.Getenv("OPENAI_API_KEY")
-	if !data.AuthToken.IsNull() {
-		auth_token = data.AuthToken.ValueString()
+	api_key := os.Getenv("OPENAI_API_KEY")
+	if !data.ApiKey.IsNull() {
+		api_key = data.ApiKey.ValueString()
 	}
-	client := openai.NewClient(auth_token)
+	client := openai.NewClient(api_key)
 
 	// Make the OpenAI client available during DataSource and Resource
 	// type Configure methods.
