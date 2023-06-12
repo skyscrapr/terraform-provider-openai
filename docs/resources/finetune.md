@@ -22,28 +22,28 @@ Fine Tune resource
 - `classification_n_classes` (Number) Classification N Classes
 - `classification_positive_class` (String) Classification Positive Class
 - `compute_classification_metrics` (Boolean) Compute Classification Metrics
+- `events` (Attributes List) Events (see [below for nested schema](#nestedatt--events))
+- `hyperparams` (Attributes List) Hyperparams (see [below for nested schema](#nestedatt--hyperparams))
 - `learning_rate_multiplier` (Number) Learning Rate Multiplier
 - `model` (String) Model Identifier
 - `n_epochs` (Number) N Epochs
 - `prompt_loss_weight` (Number) Prompt Loss Weight
+- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--result_files))
 - `suffix` (List of String) Suffix
 - `training_file` (String) Training File Identifier
+- `training_files` (Attributes List) Training Files (see [below for nested schema](#nestedatt--training_files))
 - `validation_file` (String) Validation File Identifier
+- `validation_files` (Attributes List) Validation Files (see [below for nested schema](#nestedatt--validation_files))
 
 ### Read-Only
 
 - `created` (Number) Created Time
-- `events` (Attributes List) Events (see [below for nested schema](#nestedatt--events))
 - `fine_tuned_model` (String) Fine Tuned Model
-- `hyperparams` (Attributes List) Hyperparams (see [below for nested schema](#nestedatt--hyperparams))
 - `id` (String) Fine Tune Identifier
 - `object` (String) Object Type
 - `organization_id` (String) Organization Id
-- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--result_files))
 - `status` (String) Status
-- `training_files` (Attributes List) Training Files (see [below for nested schema](#nestedatt--training_files))
 - `updated_at` (Number) Updated Time
-- `validation_files` (Attributes List) Validation Files (see [below for nested schema](#nestedatt--validation_files))
 
 <a id="nestedatt--events"></a>
 ### Nested Schema for `events`

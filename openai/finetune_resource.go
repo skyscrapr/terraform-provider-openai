@@ -3,7 +3,6 @@ package openai
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -99,7 +98,7 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 			"events": schema.ListNestedAttribute{
 				MarkdownDescription: "Events",
-				Computed:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"object": schema.StringAttribute{
@@ -127,7 +126,7 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 			"hyperparams": schema.ListNestedAttribute{
 				MarkdownDescription: "Hyperparams",
-				Computed:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"batch_size": schema.Int64Attribute{
@@ -155,7 +154,7 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 			"result_files": schema.ListNestedAttribute{
 				MarkdownDescription: "Result Files",
-				Computed:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: openAIFileResourceAttributes(),
 				},
@@ -166,14 +165,14 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 			"validation_files": schema.ListNestedAttribute{
 				MarkdownDescription: "Validation Files",
-				Computed:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: openAIFileResourceAttributes(),
 				},
 			},
 			"training_files": schema.ListNestedAttribute{
 				MarkdownDescription: "Training Files",
-				Computed:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: openAIFileResourceAttributes(),
 				},
@@ -188,7 +187,7 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 
 type OpenAICreateFineTuneRequest struct {
 	TrainingFile                 types.String `tfsdk:"training_file"`
-	ValidationFile               types.String `tfsdk:"training_file"`
+	ValidationFile               types.String `tfsdk:"validation_file"`
 	Model                        types.String `tfsdk:"model"`
 	NEpochs                      types.Int64  `tfsdk:"n_epochs"`
 	BatchSize                    types.Int64  `tfsdk:"batch_size"`
@@ -199,6 +198,33 @@ type OpenAICreateFineTuneRequest struct {
 	ClassificationPositiveClass  types.String `tfsdk:"classification_positive_class"`
 	ClassificationBetas          []string     `tfsdk:"classification_betas"`
 	Suffix                       []string     `tfsdk:"suffix"`
+
+	OrganizationID  types.String               `tfsdk:"organization_id"`
+	Created         types.Int64                `tfsdk:"created"`
+	ValidationFiles []OpenAIFileModel          `tfsdk:"validation_files"`
+	ResultFiles     []OpenAIFileModel          `tfsdk:"result_files"`
+	TrainingFiles   []OpenAIFileModel          `tfsdk:"training_files"`
+	Object          types.String               `tfsdk:"object"`
+	Events          []OpenAIFineTuneEvent      `tfsdk:"events"`
+	Status          types.String               `tfsdk:"status"`
+	UpdatedAt       types.Int64                `tfsdk:"updated_at"`
+	Hyperparams     []OpenAIFineTuneHyperparam `tfsdk:"hyperparams"`
+	FineTunedModel  types.String               `tfsdk:"fine_tuned_model"`
+	ID              types.String               `tfsdk:"id"`
+}
+
+type OpenAIFineTuneEvent struct {
+	Object  types.String `tfsdk:"object"`
+	Created types.Int64  `tfsdk:"created"`
+	Level   types.String `tfsdk:"level"`
+	Message types.String `tfsdk:"message"`
+}
+
+type OpenAIFineTuneHyperparam struct {
+	BatchSize              types.Int64   `tfsdk:"batch_size"`
+	LearningRateMultiplier types.Float64 `tfsdk:"learning_rate_multiplier"`
+	NEpochs                types.Int64   `tfsdk:"n_epochs"`
+	PromptLossWeight       types.Float64 `tfsdk:"prompt_loss_weight"`
 }
 
 func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

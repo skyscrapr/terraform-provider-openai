@@ -65,7 +65,7 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Default values to environment variables, but override
 	// with Terraform configuration value if set.
-	auth_token := os.Getenv("OPENAI_AUTH_TOKEN")
+	auth_token := os.Getenv("OPENAI_API_KEY")
 	if !data.AuthToken.IsNull() {
 		auth_token = data.AuthToken.ValueString()
 	}

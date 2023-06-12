@@ -3,6 +3,8 @@ package openai
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -185,4 +187,26 @@ func NewOpenAIFineTuneModel(ft *openai.FineTune) OpenAIFineTuneModel {
 	fineTuneDatasourceModel.ValidationFiles = validationFiles
 
 	return fineTuneDatasourceModel
+}
+
+func GetFilePath(filePath string) (*string, error) {
+	// if filepath.IsAbs(filePath) {
+	// 	return &filePath, nil
+	// }
+
+	// tfPath := os.Getenv("TF_DATA_DIR")
+	// if tfPath == "" {
+	// 	return nil, fmt.Errorf("TF_DATA_DIR environment variable not set")
+	// }
+	// newFilePath := filepath.Join(tfPath, filePath)
+	// // _, err := os.Stat(newFilePath)
+	// return &newFilePath, nil
+
+	configDir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	absFilePath := filepath.Join(configDir, filePath)
+	return &absFilePath, nil
 }

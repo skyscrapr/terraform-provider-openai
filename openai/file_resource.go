@@ -74,17 +74,23 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	filePath, err := GetFilePath(data.Filename.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("UploadFile", fmt.Sprintf("Unable to upload %s, got error: %s", *filePath, err))
+		return
+	}
+
 	file, err := r.client.Files().UploadFile(&openai.UploadFileRequest{
-		File:    data.Filename.ValueString(),
+		File:    *filePath,
 		Purpose: data.Purpose.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to upload& File, got error: %s", err))
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to upload File: %s", err))
 		return
 	}
 	tflog.Trace(ctx, "Uploaded file successfully")
 
-	data = NewOpenAIFileModel(&file)
+	data = NewOpenAIFileModel(file)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
