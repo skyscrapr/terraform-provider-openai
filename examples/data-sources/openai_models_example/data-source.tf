@@ -6,7 +6,9 @@ terraform {
   }
 }
 
-provider "openai" {}
+data "openai_models" "models" {
+}
 
-data "openai_models" "test" {
+output "model_count" {
+  value = length(data.openai_models.models.models)
 }
