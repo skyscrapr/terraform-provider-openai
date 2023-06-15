@@ -33,7 +33,34 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "File resource",
-		Attributes:          openAIFileResourceAttributes(),
+
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				MarkdownDescription: "File Identifier",
+				Computed:            true,
+			},
+			"bytes": schema.Int64Attribute{
+				MarkdownDescription: "File size in bytes",
+				Computed:            true,
+			},
+			"created": schema.Int64Attribute{
+				MarkdownDescription: "Created Time",
+				Computed:            true,
+			},
+			"filename": schema.StringAttribute{
+				MarkdownDescription: "Filename",
+				Required:            true,
+			},
+			"object": schema.StringAttribute{
+				MarkdownDescription: "Object Type",
+				Computed:            true,
+			},
+			"purpose": schema.StringAttribute{
+				MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
+				Computed:            true,
+				Default:             stringdefault.StaticString("fine-tune"),
+			},
+		},
 	}
 }
 
@@ -126,7 +153,7 @@ func openAIFileResourceAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "File Identifier",
-			Computed:            true,
+			Required:            true,
 		},
 		"bytes": schema.Int64Attribute{
 			MarkdownDescription: "File size in bytes",
@@ -147,7 +174,6 @@ func openAIFileResourceAttributes() map[string]schema.Attribute {
 		"purpose": schema.StringAttribute{
 			MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
 			Computed:            true,
-			Default:             stringdefault.StaticString("fine-tune"),
 		},
 	}
 }
