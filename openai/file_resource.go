@@ -126,7 +126,7 @@ func openAIFileResourceAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "File Identifier",
-			Required:            true,
+			Computed:            true,
 		},
 		"bytes": schema.Int64Attribute{
 			MarkdownDescription: "File size in bytes",
