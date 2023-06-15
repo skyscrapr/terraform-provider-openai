@@ -91,9 +91,9 @@ func NewOpenAIFineTuneModel(ft *openai.FineTune) OpenAIFineTuneModel {
 
 	hyperparams := OpenAIFineTuneHyperparamsModel{
 		BatchSize:              types.Int64Value(ft.Hyperparams.BatchSize),
-		LearningRateMultiplier: types.Float64Value(float64(ft.Hyperparams.LearningRateMultiplier)),
+		LearningRateMultiplier: types.Float64Value(ft.Hyperparams.LearningRateMultiplier),
 		NEpochs:                types.Int64Value(ft.Hyperparams.NEpochs),
-		PromptLossWeight:       types.Float64Value(float64(ft.Hyperparams.PromptLossWeight)),
+		PromptLossWeight:       types.Float64Value(ft.Hyperparams.PromptLossWeight),
 	}
 	fineTuneModel.Hyperparams, _ = types.ObjectValueFrom(ctx, OpenAIFineTuneHyperparamsModel{}.AttrTypes(), hyperparams)
 
