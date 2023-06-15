@@ -8,5 +8,6 @@ terraform {
 
 provider "openai" {}
 
-data "openai_finetunes" "test" {
+data "openai_finetune" "example" {
+  id = "ft-UV2XKz7N4T9O5WkB7ojzmg6a"
 }

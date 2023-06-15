@@ -32,12 +32,15 @@ Read-Only:
 - `created` (Number) Created Time
 - `events` (Attributes List) Events (see [below for nested schema](#nestedatt--finetunes--events))
 - `fine_tuned_model` (String) Fine-Tuned Model ID
-- `hyperparams` (Attributes List) Hyperparams (see [below for nested schema](#nestedatt--finetunes--hyperparams))
+- `hyperparams` (Attributes) Hyperparams (see [below for nested schema](#nestedatt--finetunes--hyperparams))
 - `model` (String) Model ID
 - `object` (String) Object Type
 - `organization_id` (String) Organization ID
+- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--finetunes--result_files))
 - `status` (String) Status
+- `training_files` (Attributes List) Training Files (see [below for nested schema](#nestedatt--finetunes--training_files))
 - `updated_at` (Number) Updated Time
+- `validation_files` (Attributes List) Validation Files (see [below for nested schema](#nestedatt--finetunes--validation_files))
 
 <a id="nestedatt--finetunes--events"></a>
 ### Nested Schema for `finetunes.events`
@@ -59,3 +62,51 @@ Read-Only:
 - `learning_rate_multiplier` (Number) Learning Rate Multipier
 - `n_epochs` (Number) N Epochs
 - `prompt_loss_weight` (Number) Prompt Loss Weight
+
+
+<a id="nestedatt--finetunes--result_files"></a>
+### Nested Schema for `finetunes.result_files`
+
+Required:
+
+- `id` (String) File Identifier
+
+Read-Only:
+
+- `bytes` (Number) File size in bytes
+- `created` (Number) Created Time
+- `filename` (String) Filename
+- `object` (String) Object Type
+- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
+
+
+<a id="nestedatt--finetunes--training_files"></a>
+### Nested Schema for `finetunes.training_files`
+
+Required:
+
+- `id` (String) File Identifier
+
+Read-Only:
+
+- `bytes` (Number) File size in bytes
+- `created` (Number) Created Time
+- `filename` (String) Filename
+- `object` (String) Object Type
+- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
+
+
+<a id="nestedatt--finetunes--validation_files"></a>
+### Nested Schema for `finetunes.validation_files`
+
+Required:
+
+- `id` (String) File Identifier
+
+Read-Only:
+
+- `bytes` (Number) File size in bytes
+- `created` (Number) Created Time
+- `filename` (String) Filename
+- `object` (String) Object Type
+- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning

@@ -23,8 +23,8 @@ type FineTunesDataSource struct {
 	*OpenAIDatasource
 }
 
-// FilesDataSourceModel describes the data source data model.
-type FineTunesDataSourceModel struct {
+// FineTunesModel describes the data source data model.
+type FineTunesModel struct {
 	Id        types.String          `tfsdk:"id"`
 	FineTunes []OpenAIFineTuneModel `tfsdk:"finetunes"`
 }
@@ -55,7 +55,7 @@ func (d *FineTunesDataSource) Schema(ctx context.Context, req datasource.SchemaR
 }
 
 func (d *FineTunesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data FineTunesDataSourceModel
+	var data FineTunesModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)

@@ -22,31 +22,40 @@ Fine Tune resource
 - `classification_n_classes` (Number) Classification N Classes
 - `classification_positive_class` (String) Classification Positive Class
 - `compute_classification_metrics` (Boolean) Compute Classification Metrics
-- `events` (Attributes List) Events (see [below for nested schema](#nestedatt--events))
-- `hyperparams` (Attributes List) Hyperparams (see [below for nested schema](#nestedatt--hyperparams))
+- `fine_tune` (Attributes) FineTune (see [below for nested schema](#nestedatt--fine_tune))
 - `learning_rate_multiplier` (Number) Learning Rate Multiplier
 - `model` (String) Model Identifier
 - `n_epochs` (Number) N Epochs
 - `prompt_loss_weight` (Number) Prompt Loss Weight
-- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--result_files))
 - `suffix` (List of String) Suffix
 - `training_file` (String) Training File Identifier
-- `training_files` (Attributes List) Training Files (see [below for nested schema](#nestedatt--training_files))
 - `validation_file` (String) Validation File Identifier
-- `validation_files` (Attributes List) Validation Files (see [below for nested schema](#nestedatt--validation_files))
 
 ### Read-Only
 
-- `created` (Number) Created Time
-- `fine_tuned_model` (String) Fine Tuned Model
 - `id` (String) Fine Tune Identifier
+
+<a id="nestedatt--fine_tune"></a>
+### Nested Schema for `fine_tune`
+
+Read-Only:
+
+- `created` (Number) Created Time
+- `events` (Attributes List) Events (see [below for nested schema](#nestedatt--fine_tune--events))
+- `fine_tuned_model` (String) Fine Tuned Model
+- `hyperparams` (Attributes) Hyperparams (see [below for nested schema](#nestedatt--fine_tune--hyperparams))
+- `id` (String) Fine Tune Identifier
+- `model` (String) Model Identifier
 - `object` (String) Object Type
 - `organization_id` (String) Organization Id
+- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--fine_tune--result_files))
 - `status` (String) Status
+- `training_files` (Attributes List) Training Files (see [below for nested schema](#nestedatt--fine_tune--training_files))
 - `updated_at` (Number) Updated Time
+- `validation_files` (Attributes List) Validation Files (see [below for nested schema](#nestedatt--fine_tune--validation_files))
 
-<a id="nestedatt--events"></a>
-### Nested Schema for `events`
+<a id="nestedatt--fine_tune--events"></a>
+### Nested Schema for `fine_tune.events`
 
 Read-Only:
 
@@ -56,8 +65,8 @@ Read-Only:
 - `object` (String) Object Type
 
 
-<a id="nestedatt--hyperparams"></a>
-### Nested Schema for `hyperparams`
+<a id="nestedatt--fine_tune--hyperparams"></a>
+### Nested Schema for `fine_tune.hyperparams`
 
 Read-Only:
 
@@ -67,8 +76,8 @@ Read-Only:
 - `prompt_loss_weight` (Number) Prompt Loss Weight
 
 
-<a id="nestedatt--result_files"></a>
-### Nested Schema for `result_files`
+<a id="nestedatt--fine_tune--result_files"></a>
+### Nested Schema for `fine_tune.result_files`
 
 Required:
 
@@ -83,8 +92,8 @@ Read-Only:
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
 
 
-<a id="nestedatt--training_files"></a>
-### Nested Schema for `training_files`
+<a id="nestedatt--fine_tune--training_files"></a>
+### Nested Schema for `fine_tune.training_files`
 
 Required:
 
@@ -99,8 +108,8 @@ Read-Only:
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
 
 
-<a id="nestedatt--validation_files"></a>
-### Nested Schema for `validation_files`
+<a id="nestedatt--fine_tune--validation_files"></a>
+### Nested Schema for `fine_tune.validation_files`
 
 Required:
 

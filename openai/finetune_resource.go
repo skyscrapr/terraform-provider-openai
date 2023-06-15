@@ -3,6 +3,7 @@ package openai
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -88,148 +89,118 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 				MarkdownDescription: "Suffix",
 				Optional:            true,
 			},
-			"object": schema.StringAttribute{
-				MarkdownDescription: "Object Type",
+			"fine_tune": schema.SingleNestedAttribute{
+				MarkdownDescription: "FineTune",
 				Computed:            true,
-			},
-			"created": schema.Int64Attribute{
-				MarkdownDescription: "Created Time",
-				Computed:            true,
-			},
-			"events": schema.ListNestedAttribute{
-				MarkdownDescription: "Events",
 				Optional:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"object": schema.StringAttribute{
-							MarkdownDescription: "Object Type",
-							Computed:            true,
-						},
-						"created": schema.Int64Attribute{
-							MarkdownDescription: "Created Time",
-							Computed:            true,
-						},
-						"level": schema.StringAttribute{
-							MarkdownDescription: "Level",
-							Computed:            true,
-						},
-						"message": schema.StringAttribute{
-							MarkdownDescription: "Message",
-							Computed:            true,
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						MarkdownDescription: "Fine Tune Identifier",
+						Computed:            true,
+					},
+					"object": schema.StringAttribute{
+						MarkdownDescription: "Object Type",
+						Computed:            true,
+					},
+					"model": schema.StringAttribute{
+						MarkdownDescription: "Model Identifier",
+						Computed:            true,
+					},
+					"created": schema.Int64Attribute{
+						MarkdownDescription: "Created Time",
+						Computed:            true,
+					},
+					"events": schema.ListNestedAttribute{
+						MarkdownDescription: "Events",
+						Computed:            true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"object": schema.StringAttribute{
+									MarkdownDescription: "Object Type",
+									Computed:            true,
+								},
+								"created": schema.Int64Attribute{
+									MarkdownDescription: "Created Time",
+									Computed:            true,
+								},
+								"level": schema.StringAttribute{
+									MarkdownDescription: "Level",
+									Computed:            true,
+								},
+								"message": schema.StringAttribute{
+									MarkdownDescription: "Message",
+									Computed:            true,
+								},
+							},
 						},
 					},
-				},
-			},
-			"fine_tuned_model": schema.StringAttribute{
-				MarkdownDescription: "Fine Tuned Model",
-				Computed:            true,
-			},
-			"hyperparams": schema.ListNestedAttribute{
-				MarkdownDescription: "Hyperparams",
-				Optional:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"batch_size": schema.Int64Attribute{
-							MarkdownDescription: "Batch Size",
-							Computed:            true,
-						},
-						"learning_rate_multiplier": schema.Float64Attribute{
-							MarkdownDescription: "Learning Rate Multiplier",
-							Computed:            true,
-						},
-						"n_epochs": schema.Int64Attribute{
-							MarkdownDescription: "N Epochs",
-							Computed:            true,
-						},
-						"prompt_loss_weight": schema.Float64Attribute{
-							MarkdownDescription: "Prompt Loss Weight",
-							Computed:            true,
+					"fine_tuned_model": schema.StringAttribute{
+						MarkdownDescription: "Fine Tuned Model",
+						Computed:            true,
+					},
+					"hyperparams": schema.SingleNestedAttribute{
+						MarkdownDescription: "Hyperparams",
+						Computed:            true,
+						Attributes: map[string]schema.Attribute{
+							"batch_size": schema.Int64Attribute{
+								MarkdownDescription: "Batch Size",
+								Computed:            true,
+							},
+							"learning_rate_multiplier": schema.Float64Attribute{
+								MarkdownDescription: "Learning Rate Multiplier",
+								Computed:            true,
+							},
+							"n_epochs": schema.Int64Attribute{
+								MarkdownDescription: "N Epochs",
+								Computed:            true,
+							},
+							"prompt_loss_weight": schema.Float64Attribute{
+								MarkdownDescription: "Prompt Loss Weight",
+								Computed:            true,
+							},
 						},
 					},
+					"organization_id": schema.StringAttribute{
+						MarkdownDescription: "Organization Id",
+						Computed:            true,
+					},
+					"status": schema.StringAttribute{
+						MarkdownDescription: "Status",
+						Computed:            true,
+					},
+					"result_files": schema.ListNestedAttribute{
+						MarkdownDescription: "Result Files",
+						Computed:            true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: openAIFileResourceAttributes(),
+						},
+					},
+					"validation_files": schema.ListNestedAttribute{
+						MarkdownDescription: "Validation Files",
+						Computed:            true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: openAIFileResourceAttributes(),
+						},
+					},
+					"training_files": schema.ListNestedAttribute{
+						MarkdownDescription: "Training Files",
+						Computed:            true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: openAIFileResourceAttributes(),
+						},
+					},
+					"updated_at": schema.Int64Attribute{
+						MarkdownDescription: "Updated Time",
+						Computed:            true,
+					},
 				},
-			},
-			"organization_id": schema.StringAttribute{
-				MarkdownDescription: "Organization Id",
-				Computed:            true,
-			},
-			"result_files": schema.ListNestedAttribute{
-				MarkdownDescription: "Result Files",
-				Optional:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: openAIFileResourceAttributes(),
-				},
-			},
-			"status": schema.StringAttribute{
-				MarkdownDescription: "Status",
-				Computed:            true,
-			},
-			"validation_files": schema.ListNestedAttribute{
-				MarkdownDescription: "Validation Files",
-				Optional:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: openAIFileResourceAttributes(),
-				},
-			},
-			"training_files": schema.ListNestedAttribute{
-				MarkdownDescription: "Training Files",
-				Optional:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: openAIFileResourceAttributes(),
-				},
-			},
-			"updated_at": schema.Int64Attribute{
-				MarkdownDescription: "Updated Time",
-				Computed:            true,
 			},
 		},
 	}
 }
 
-type OpenAICreateFineTuneRequest struct {
-	TrainingFile                 types.String `tfsdk:"training_file"`
-	ValidationFile               types.String `tfsdk:"validation_file"`
-	Model                        types.String `tfsdk:"model"`
-	NEpochs                      types.Int64  `tfsdk:"n_epochs"`
-	BatchSize                    types.Int64  `tfsdk:"batch_size"`
-	LearningRateMultiplier       types.Int64  `tfsdk:"learning_rate_multiplier"`
-	PromptLossWeight             types.Int64  `tfsdk:"prompt_loss_weight"`
-	ComputeClassificationMetrics types.Bool   `tfsdk:"compute_classification_metrics"`
-	ClassificationNClasses       types.Int64  `tfsdk:"classification_n_classes"`
-	ClassificationPositiveClass  types.String `tfsdk:"classification_positive_class"`
-	ClassificationBetas          []string     `tfsdk:"classification_betas"`
-	Suffix                       []string     `tfsdk:"suffix"`
-
-	OrganizationID  types.String               `tfsdk:"organization_id"`
-	Created         types.Int64                `tfsdk:"created"`
-	ValidationFiles []OpenAIFileModel          `tfsdk:"validation_files"`
-	ResultFiles     []OpenAIFileModel          `tfsdk:"result_files"`
-	TrainingFiles   []OpenAIFileModel          `tfsdk:"training_files"`
-	Object          types.String               `tfsdk:"object"`
-	Events          []OpenAIFineTuneEvent      `tfsdk:"events"`
-	Status          types.String               `tfsdk:"status"`
-	UpdatedAt       types.Int64                `tfsdk:"updated_at"`
-	Hyperparams     []OpenAIFineTuneHyperparam `tfsdk:"hyperparams"`
-	FineTunedModel  types.String               `tfsdk:"fine_tuned_model"`
-	ID              types.String               `tfsdk:"id"`
-}
-
-type OpenAIFineTuneEvent struct {
-	Object  types.String `tfsdk:"object"`
-	Created types.Int64  `tfsdk:"created"`
-	Level   types.String `tfsdk:"level"`
-	Message types.String `tfsdk:"message"`
-}
-
-type OpenAIFineTuneHyperparam struct {
-	BatchSize              types.Int64   `tfsdk:"batch_size"`
-	LearningRateMultiplier types.Float64 `tfsdk:"learning_rate_multiplier"`
-	NEpochs                types.Int64   `tfsdk:"n_epochs"`
-	PromptLossWeight       types.Float64 `tfsdk:"prompt_loss_weight"`
-}
-
 func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data OpenAICreateFineTuneRequest
-
+	var data OpenAIFineTuneResourceModel
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -256,16 +227,17 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to upload& File, got error: %s", err))
 		return
 	}
-	tflog.Trace(ctx, "Uploaded file successfully")
+	tflog.Trace(ctx, "FineTune created successfully")
 
-	fineTuneData := NewOpenAIFineTuneModel(fineTune)
+	data.FineTune, _ = types.ObjectValueFrom(ctx, data.FineTune.AttributeTypes(ctx), NewOpenAIFineTuneModel(fineTune))
+	data.Id = types.StringValue(fineTune.Id)
 
 	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &fineTuneData)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *FineTuneResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data OpenAIFineTuneModel
+	var data OpenAIFineTuneResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -281,7 +253,8 @@ func (r *FineTuneResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	data = NewOpenAIFineTuneModel(fineTune)
+	data.FineTune, _ = types.ObjectValueFrom(context.TODO(), OpenAIFineTuneModel{}.AttrTypes(), fineTune)
+	data.Id = types.StringValue(fineTune.Id)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -292,7 +265,7 @@ func (r *FineTuneResource) Update(ctx context.Context, req resource.UpdateReques
 }
 
 func (r *FineTuneResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data OpenAIFineTuneModel
+	var data OpenAIFineTuneResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -315,33 +288,4 @@ func (r *FineTuneResource) Delete(ctx context.Context, req resource.DeleteReques
 
 func (r *FineTuneResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-func openAIFileResourceAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			MarkdownDescription: "File Identifier",
-			Required:            true,
-		},
-		"bytes": schema.Int64Attribute{
-			MarkdownDescription: "File size in bytes",
-			Computed:            true,
-		},
-		"created": schema.Int64Attribute{
-			MarkdownDescription: "Created Time",
-			Computed:            true,
-		},
-		"filename": schema.StringAttribute{
-			MarkdownDescription: "Filename",
-			Computed:            true,
-		},
-		"object": schema.StringAttribute{
-			MarkdownDescription: "Object Type",
-			Computed:            true,
-		},
-		"purpose": schema.StringAttribute{
-			MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
-			Computed:            true,
-		},
-	}
 }

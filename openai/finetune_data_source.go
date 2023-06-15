@@ -3,7 +3,6 @@ package openai
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -58,11 +57,6 @@ func (d *FineTuneDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 func openAIFineTuneAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-
-		// ResultFiles     []OpenAIFileModel    `tfsdk:"result_files"`
-		// TrainingFiles     []OpenAIFileModel    `tfsdk:"training_files"`
-		// ValidationFiles     []OpenAIFileModel   `tfsdk:"validation_files"`
-
 		"id": schema.StringAttribute{
 			MarkdownDescription: "File Identifier",
 			Required:            true,
@@ -103,27 +97,25 @@ func openAIFineTuneAttributes() map[string]schema.Attribute {
 				},
 			},
 		},
-		"hyperparams": schema.ListNestedAttribute{
+		"hyperparams": schema.SingleNestedAttribute{
 			MarkdownDescription: "Hyperparams",
 			Computed:            true,
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"batch_size": schema.Int64Attribute{
-						MarkdownDescription: "Batch Size",
-						Computed:            true,
-					},
-					"learning_rate_multiplier": schema.Float64Attribute{
-						MarkdownDescription: "Learning Rate Multipier",
-						Computed:            true,
-					},
-					"n_epochs": schema.Int64Attribute{
-						MarkdownDescription: "N Epochs",
-						Computed:            true,
-					},
-					"prompt_loss_weight": schema.Float64Attribute{
-						MarkdownDescription: "Prompt Loss Weight",
-						Computed:            true,
-					},
+			Attributes: map[string]schema.Attribute{
+				"batch_size": schema.Int64Attribute{
+					MarkdownDescription: "Batch Size",
+					Computed:            true,
+				},
+				"learning_rate_multiplier": schema.Float64Attribute{
+					MarkdownDescription: "Learning Rate Multipier",
+					Computed:            true,
+				},
+				"n_epochs": schema.Int64Attribute{
+					MarkdownDescription: "N Epochs",
+					Computed:            true,
+				},
+				"prompt_loss_weight": schema.Float64Attribute{
+					MarkdownDescription: "Prompt Loss Weight",
+					Computed:            true,
 				},
 			},
 		},
@@ -139,8 +131,58 @@ func openAIFineTuneAttributes() map[string]schema.Attribute {
 			MarkdownDescription: "Status",
 			Computed:            true,
 		},
+		"result_files": schema.ListNestedAttribute{
+			MarkdownDescription: "Result Files",
+			Computed:            true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: openAIFileDatasourceAttributes(),
+			},
+		},
+		"validation_files": schema.ListNestedAttribute{
+			MarkdownDescription: "Validation Files",
+			Computed:            true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: openAIFileDatasourceAttributes(),
+			},
+		},
+		"training_files": schema.ListNestedAttribute{
+			MarkdownDescription: "Training Files",
+			Computed:            true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: openAIFileDatasourceAttributes(),
+			},
+		},
 		"updated_at": schema.Int64Attribute{
 			MarkdownDescription: "Updated Time",
+			Computed:            true,
+		},
+	}
+}
+
+func openAIFileDatasourceAttributes() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			MarkdownDescription: "File Identifier",
+			Required:            true,
+		},
+		"bytes": schema.Int64Attribute{
+			MarkdownDescription: "File size in bytes",
+			Computed:            true,
+		},
+		"created": schema.Int64Attribute{
+			MarkdownDescription: "Created Time",
+			Computed:            true,
+		},
+		"filename": schema.StringAttribute{
+			MarkdownDescription: "Filename",
+			Computed:            true,
+		},
+		"object": schema.StringAttribute{
+			MarkdownDescription: "Object Type",
+			Computed:            true,
+		},
+		"purpose": schema.StringAttribute{
+			MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
 			Computed:            true,
 		},
 	}

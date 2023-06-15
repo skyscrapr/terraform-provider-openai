@@ -17,12 +17,12 @@ File resource
 
 ### Required
 
-- `filename` (String) Filename
+- `id` (String) File Identifier
 
 ### Read-Only
 
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
-- `id` (String) File Identifier
+- `filename` (String) Filename
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning

@@ -1,21 +1,19 @@
 package openai
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccFineTuneResource(t *testing.T) {
-	t.Skip("TODO")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccFineTuneResourceConfig("test.txt"),
+				Config: testAccFineTuneResourceConfig(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("openai_finetune.test", "id"),
 					resource.TestCheckResourceAttr("openai_finetune.test", "filename", "test.txt"),
@@ -45,10 +43,14 @@ func TestAccFineTuneResource(t *testing.T) {
 	})
 }
 
-func testAccFineTuneResourceConfig(configurableAttribute string) string {
-	return fmt.Sprintf(`
-resource "openai_finetune" "test" {
-  filename = %[1]q
+func testAccFineTuneResourceConfig() string {
+	return `
+resource "openai_finetune" "example" {
+	training_file                  = "file-m5YlZT81Z3kuehmidYGXeo1P"
+	validation_file                = "file-n3XhcMU0nyyEphsupzlwOxNx"
+	model                          = "ada"
+	compute_classification_metrics = true
+	classification_positive_class  = " baseball"
 }
-`, configurableAttribute)
+`
 }

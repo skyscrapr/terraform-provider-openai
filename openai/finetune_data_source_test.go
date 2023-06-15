@@ -7,7 +7,6 @@ import (
 )
 
 func TestAccFineTuneDataSource(t *testing.T) {
-	t.Skip("TODO")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -25,6 +24,6 @@ func TestAccFineTuneDataSource(t *testing.T) {
 
 const testAccFineTuneDataSourceConfig = `
 data "openai_finetune" "test" {
-	id = "1"
+	id = "ft-UV2XKz7N4T9O5WkB7ojzmg6a"
 }
 `
