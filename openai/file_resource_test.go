@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccFileResource(t *testing.T) {
-	t.Skip("TODO")
+	t.Skip("Cost associated with test")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
