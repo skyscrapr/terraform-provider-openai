@@ -30,6 +30,7 @@ Fine Tune resource
 - `suffix` (List of String) Suffix
 - `training_file` (String) Training File Identifier
 - `validation_file` (String) Validation File Identifier
+- `wait` (Boolean) Wait for Fine-Tune completion
 
 ### Read-Only
 

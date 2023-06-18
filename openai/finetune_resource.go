@@ -2,6 +2,7 @@ package openai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -38,6 +39,10 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Fine Tune Identifier",
 				Computed:            true,
+			},
+			"wait": schema.BoolAttribute{
+				MarkdownDescription: "Wait for Fine-Tune completion",
+				Optional:            true,
 			},
 			"training_file": schema.StringAttribute{
 				MarkdownDescription: "Training File Identifier",
@@ -224,10 +229,38 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	fineTune, err := r.client.FineTunes().CreateFineTune(&ftreq)
 	if err != nil {
-		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to upload& File, got error: %s", err))
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to create fine tuning job, got error: %s", err))
 		return
 	}
-	tflog.Trace(ctx, "FineTune created successfully")
+	tflog.Info(ctx, "FineTune created successfully")
+
+	if !data.Wait.IsUnknown() && data.Wait.ValueBool() {
+		tflog.Info(ctx, "Begin Streaming")
+		err = r.client.FineTunes().SubscribeFineTuneEvents(
+			fineTune.Id,
+			func(event *openai.SSEEvent) error {
+				var fineTuneEvent openai.FineTuneEvent
+				err := json.Unmarshal([]byte(event.Data), &fineTuneEvent)
+				tflog.Info(ctx, fmt.Sprintf("Fine -Tune Event: %s", fineTuneEvent.Message))
+				return err
+			},
+			func(err error) error {
+				tflog.Error(ctx, fmt.Sprintf("Fine-Tune Event Error: %s", err))
+				return err
+			},
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to stream fine tuning events, got error: %s", err))
+			return
+		}
+	}
+
+	// Update finetune prior to saving to state
+	fineTune, err = r.client.FineTunes().GetFineTune(fineTune.Id)
+	if err != nil {
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to read fine tuning job, got error: %s", err))
+		return
+	}
 
 	data.FineTune, _ = types.ObjectValueFrom(ctx, data.FineTune.AttributeTypes(ctx), NewOpenAIFineTuneModel(fineTune))
 	data.Id = types.StringValue(fineTune.Id)

@@ -148,14 +148,8 @@ type OpenAIFineTuneResourceModel struct {
 	ClassificationBetas          []string     `tfsdk:"classification_betas"`
 	Suffix                       []string     `tfsdk:"suffix"`
 	FineTune                     types.Object `tfsdk:"fine_tune"`
+	Wait                         types.Bool   `tfsdk:"wait"`
 }
-
-// func NewOpenAIFineTuneResourceModel(ft *openai.FineTune) OpenAIFineTuneResourceModel {
-// 	fineTuneResourceModel := OpenAIFineTuneResourceModel{
-// 		FineTune: NewOpenAIFineTuneModel(ft),
-// 	}
-// 	return fineTuneResourceModel
-// }
 
 type OpenAIFineTuneEventModel struct {
 	Object  types.String `tfsdk:"object"`

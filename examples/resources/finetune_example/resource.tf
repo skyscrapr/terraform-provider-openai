@@ -22,5 +22,6 @@ resource "openai_finetune" "example" {
   model                          = "ada"
   compute_classification_metrics = true
   classification_positive_class  = " baseball"
+  wait                           = true
 }
 
