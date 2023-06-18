@@ -9,7 +9,8 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.3.0
 )
 
-replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
+// For local development
+// replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
 
 require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
