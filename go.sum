@@ -155,12 +155,8 @@ github.com/shopspring/decimal v1.2.0/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFR
 github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
 github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
 github.com/skeema/knownhosts v1.1.0 h1:Wvr9V0MxhjRbl3f9nMnKnFfiWTJmtECJ9Njkea3ysW0=
-github.com/skyscrapr/openai-sdk-go v0.0.0-20230619044807-8443be5141a6 h1:sg/ddQKByiG+BhgJ0R6u2TUhTB6dOlZJxCiQVCmfE5E=
-github.com/skyscrapr/openai-sdk-go v0.0.0-20230619044807-8443be5141a6/go.mod h1:ZN3ESLlPXOb2XsQIg8Eq5EUN0kTg6WB3CiyYzBdxtDw=
 github.com/skyscrapr/openai-sdk-go v0.0.0-20230619065909-d1e3156ff50a h1:kknsOelLXV5UTxWs3JPnkAkYTV7xljKNtM5dxE03I8g=
 github.com/skyscrapr/openai-sdk-go v0.0.0-20230619065909-d1e3156ff50a/go.mod h1:FsqF4u4OHs6BFjFuQavyHuqI8eWDt68fdLvfP/gXns8=
-github.com/skyscrapr/openai-sseclient-go v0.0.0-20230619011341-1f8774816d56 h1:7gsW0+rg49Ir6HyVBgCnxC41+9kyDO7qNQuUmyEb3I0=
-github.com/skyscrapr/openai-sseclient-go v0.0.0-20230619011341-1f8774816d56/go.mod h1:Bixu/oBLy9NIqktbwaRoix92tOE1OkR7B0sjhJkGA24=
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
 github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155UU=
