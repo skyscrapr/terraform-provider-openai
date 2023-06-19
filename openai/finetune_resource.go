@@ -307,15 +307,61 @@ func (r *FineTuneResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	bDeleted, err := r.client.FineTunes().DeleteFineTuneModel(data.Id.ValueString())
+	tflog.Info(ctx, "Get existing Fine-Tune...")
+	fineTune, err := r.client.FineTunes().GetFineTune(data.Id.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Fime Tune Model, got error: %s", err))
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to read Fine Tune, got error: %s", err))
 		return
 	}
-	if bDeleted {
+	// need to ignore is fine tune is already delete. - Missing test
+
+	// Cancel fine tune
+	tflog.Info(ctx, fmt.Sprintf("Fine-Tune.Status: %s", fineTune.Status))
+	if fineTune.Status != "succeeded" {
+		tflog.Info(ctx, "Cancelling Fine-Tune")
+		_, err = r.client.FineTunes().CancelFineTune(data.Id.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to cancel fine tune %s, got error: %s", fineTune.Id, err))
+			return
+		}
+	}
+
+	// Delete result files
+	for _, file := range fineTune.ResultFiles {
+		tflog.Info(ctx, fmt.Sprintf("Deleting Fine-Tune Result File: %s", file.Id))
+		_, err := r.client.Files().DeleteFile(file.Id)
+		if err != nil {
+			if openaierr, ok := err.(*openai.APIError); ok {
+				if openaierr.HTTPStatusCode == 404 {
+					tflog.Info(ctx, "Fine-Tune Result File does not exist")
+				} else {
+					resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Result File %s, got error: %s", file.Id, err))
+					return
+				}
+			} else {
+				resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Result File %s, got error: %s", file.Id, err))
+				return
+			}
+		}
+	}
+
+	// Delete the fine tuned model
+	if fineTune.FineTunedModel != "" {
+		tflog.Info(ctx, fmt.Sprintf("Deleting Fine-Tune Model: %s", fineTune.FineTunedModel))
+		bDeleted, err := r.client.FineTunes().DeleteFineTuneModel(fineTune.FineTunedModel)
+		if err != nil {
+			if err, ok := err.(*openai.APIError); ok {
+				fmt.Println("openai error:", err.Code)
+				// Or whatever other field(s) you need
+			}
+
+			resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Fime Tune Model, got error: %s", err))
+			return
+		}
+		if !bDeleted {
+			tflog.Trace(ctx, "Fine Tune Model not deleted")
+		}
 		tflog.Trace(ctx, "Fine Tune Model deleted successfully")
-	} else {
-		tflog.Trace(ctx, "Fine Tune Model not deleted")
 	}
 }
 
