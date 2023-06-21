@@ -121,7 +121,13 @@ func (r *FileResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	file, err := r.client.Files().RetrieveFile(data.Id.ValueString())
-
+	if err != nil {
+		apiError := GetOpenAIAPIError(err)
+		if apiError != nil && apiError.HTTPStatusCode == 404 {
+			tflog.Info(ctx, "File does not exist")
+			err = nil
+		}
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to read File, got error: %s", err))
 		return
@@ -153,10 +159,16 @@ func (r *FileResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	err := retry.RetryContext(ctx, destroyTimeout, func() *retry.RetryError {
 		bDeleted, err := r.client.Files().DeleteFile(data.Id.ValueString())
 		if err != nil {
-			if openaierr, ok := err.(*openai.APIError); ok {
-				if openaierr.HTTPStatusCode == 409 {
+			apiError := GetOpenAIAPIError(err)
+			if apiError != nil {
+				switch apiError.HTTPStatusCode {
+				case 409:
 					tflog.Info(ctx, fmt.Sprintf("%s - Retrying...", err))
 					return retry.RetryableError(err)
+				case 405:
+					tflog.Info(ctx, "File does not exist")
+					return nil
+				default:
 				}
 			}
 			return retry.NonRetryableError(err)
@@ -182,7 +194,7 @@ func openAIFileResourceAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "File Identifier",
-			Required:            true,
+			Computed:            true,
 		},
 		"bytes": schema.Int64Attribute{
 			MarkdownDescription: "File size in bytes",

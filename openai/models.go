@@ -141,21 +141,21 @@ func NewOpenAIFineTuneModel(ft *openai.FineTune) OpenAIFineTuneModel {
 }
 
 type OpenAIFineTuneResourceModel struct {
-	Id                           types.String `tfsdk:"id"`
-	TrainingFile                 types.String `tfsdk:"training_file"`
-	ValidationFile               types.String `tfsdk:"validation_file"`
-	Model                        types.String `tfsdk:"model"`
-	NEpochs                      types.Int64  `tfsdk:"n_epochs"`
-	BatchSize                    types.Int64  `tfsdk:"batch_size"`
-	LearningRateMultiplier       types.Int64  `tfsdk:"learning_rate_multiplier"`
-	PromptLossWeight             types.Int64  `tfsdk:"prompt_loss_weight"`
-	ComputeClassificationMetrics types.Bool   `tfsdk:"compute_classification_metrics"`
-	ClassificationNClasses       types.Int64  `tfsdk:"classification_n_classes"`
-	ClassificationPositiveClass  types.String `tfsdk:"classification_positive_class"`
-	ClassificationBetas          []string     `tfsdk:"classification_betas"`
-	Suffix                       []string     `tfsdk:"suffix"`
-	FineTune                     types.Object `tfsdk:"fine_tune"`
-	Wait                         types.Bool   `tfsdk:"wait"`
+	Id                           types.String  `tfsdk:"id"`
+	TrainingFile                 types.String  `tfsdk:"training_file"`
+	ValidationFile               types.String  `tfsdk:"validation_file"`
+	Model                        types.String  `tfsdk:"model"`
+	NEpochs                      types.Int64   `tfsdk:"n_epochs"`
+	BatchSize                    types.Int64   `tfsdk:"batch_size"`
+	LearningRateMultiplier       types.Float64 `tfsdk:"learning_rate_multiplier"`
+	PromptLossWeight             types.Float64 `tfsdk:"prompt_loss_weight"`
+	ComputeClassificationMetrics types.Bool    `tfsdk:"compute_classification_metrics"`
+	ClassificationNClasses       types.Int64   `tfsdk:"classification_n_classes"`
+	ClassificationPositiveClass  types.String  `tfsdk:"classification_positive_class"`
+	ClassificationBetas          []string      `tfsdk:"classification_betas"`
+	Suffix                       []string      `tfsdk:"suffix"`
+	FineTune                     types.Object  `tfsdk:"fine_tune"`
+	Wait                         types.Bool    `tfsdk:"wait"`
 }
 
 type OpenAIFineTuneEventModel struct {

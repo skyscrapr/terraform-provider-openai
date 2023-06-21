@@ -14,8 +14,8 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &FileResource{}
-var _ resource.ResourceWithImportState = &FileResource{}
+var _ resource.Resource = &FineTuneResource{}
+var _ resource.ResourceWithImportState = &FineTuneResource{}
 
 func NewFineTuneResource() resource.Resource {
 	return &FineTuneResource{OpenAIResource: &OpenAIResource{}}
@@ -64,11 +64,11 @@ func (r *FineTuneResource) Schema(ctx context.Context, req resource.SchemaReques
 				MarkdownDescription: "Batch Size",
 				Optional:            true,
 			},
-			"learning_rate_multiplier": schema.Int64Attribute{
+			"learning_rate_multiplier": schema.Float64Attribute{
 				MarkdownDescription: "Learning Rate Multiplier",
 				Optional:            true,
 			},
-			"prompt_loss_weight": schema.Int64Attribute{
+			"prompt_loss_weight": schema.Float64Attribute{
 				MarkdownDescription: "Prompt Loss Weight",
 				Optional:            true,
 			},
@@ -219,8 +219,8 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 		Model:                        data.Model.ValueString(),
 		NEpochs:                      data.NEpochs.ValueInt64(),
 		BatchSize:                    data.BatchSize.ValueInt64(),
-		LearningRateMultiplier:       data.LearningRateMultiplier.ValueInt64(),
-		PromptLossWeight:             data.PromptLossWeight.ValueInt64(),
+		LearningRateMultiplier:       data.LearningRateMultiplier.ValueFloat64(),
+		PromptLossWeight:             data.PromptLossWeight.ValueFloat64(),
 		ComputeClassificationMetrics: data.ComputeClassificationMetrics.ValueBool(),
 		ClassificationNClasses:       data.ClassificationNClasses.ValueInt64(),
 		ClassificationPositiveClass:  data.ClassificationPositiveClass.ValueString(),
@@ -242,6 +242,7 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 				var fineTuneEvent openai.FineTuneEvent
 				err := json.Unmarshal([]byte(event.Data), &fineTuneEvent)
 				tflog.Info(ctx, fmt.Sprintf("Fine -Tune Event: %s", fineTuneEvent.Message))
+				fmt.Printf("Fine -Tune Event: %s\n", fineTuneEvent.Message)
 				return err
 			},
 			func(err error) error {
@@ -264,6 +265,17 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 
 	data.FineTune, _ = types.ObjectValueFrom(ctx, data.FineTune.AttributeTypes(ctx), NewOpenAIFineTuneModel(fineTune))
 	data.Id = types.StringValue(fineTune.Id)
+	if len(fineTune.TrainingFiles) > 0 {
+		data.TrainingFile = types.StringValue(fineTune.TrainingFiles[0].Id)
+	}
+	if len(fineTune.ValidationFiles) > 0 {
+		data.ValidationFile = types.StringValue(fineTune.ValidationFiles[0].Id)
+	}
+	data.Model = types.StringValue(fineTune.Model)
+	// data.NEpochs = types.Int64Value(fineTune.Hyperparams.NEpochs)
+	// data.BatchSize = types.Int64Value(fineTune.Hyperparams.BatchSize)
+	// data.LearningRateMultiplier = types.Float64Value(fineTune.Hyperparams.LearningRateMultiplier)
+	// data.PromptLossWeight = types.Float64Value(fineTune.Hyperparams.PromptLossWeight)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -288,6 +300,13 @@ func (r *FineTuneResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	data.FineTune, _ = types.ObjectValueFrom(context.TODO(), OpenAIFineTuneModel{}.AttrTypes(), fineTune)
 	data.Id = types.StringValue(fineTune.Id)
+	if len(fineTune.TrainingFiles) > 0 {
+		data.TrainingFile = types.StringValue(fineTune.TrainingFiles[0].Id)
+	}
+	if len(fineTune.ValidationFiles) > 0 {
+		data.ValidationFile = types.StringValue(fineTune.ValidationFiles[0].Id)
+	}
+	data.Model = types.StringValue(fineTune.Model)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -317,7 +336,9 @@ func (r *FineTuneResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	// Cancel fine tune
 	tflog.Info(ctx, fmt.Sprintf("Fine-Tune.Status: %s", fineTune.Status))
-	if fineTune.Status != "succeeded" {
+	switch fineTune.Status {
+	case "succeeded", "cancelled", "failed":
+	default:
 		tflog.Info(ctx, "Cancelling Fine-Tune")
 		_, err = r.client.FineTunes().CancelFineTune(data.Id.ValueString())
 		if err != nil {
@@ -331,17 +352,15 @@ func (r *FineTuneResource) Delete(ctx context.Context, req resource.DeleteReques
 		tflog.Info(ctx, fmt.Sprintf("Deleting Fine-Tune Result File: %s", file.Id))
 		_, err := r.client.Files().DeleteFile(file.Id)
 		if err != nil {
-			if openaierr, ok := err.(*openai.APIError); ok {
-				if openaierr.HTTPStatusCode == 404 {
-					tflog.Info(ctx, "Fine-Tune Result File does not exist")
-				} else {
-					resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Result File %s, got error: %s", file.Id, err))
-					return
-				}
-			} else {
-				resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Result File %s, got error: %s", file.Id, err))
-				return
+			apiError := GetOpenAIAPIError(err)
+			if apiError != nil && apiError.HTTPStatusCode == 404 {
+				tflog.Info(ctx, "Fine-Tune Result File does not exist")
+				err = nil
 			}
+		}
+		if err != nil {
+			resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete Result File %s, got error: %s", file.Id, err))
+			return
 		}
 	}
 

@@ -80,16 +80,13 @@ Read-Only:
 <a id="nestedatt--fine_tune--result_files"></a>
 ### Nested Schema for `fine_tune.result_files`
 
-Required:
-
-- `id` (String) File Identifier
-
 Read-Only:
 
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
 - `filename` (String) Filename
 - `filepath` (String) Filepath
+- `id` (String) File Identifier
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
 
@@ -97,16 +94,13 @@ Read-Only:
 <a id="nestedatt--fine_tune--training_files"></a>
 ### Nested Schema for `fine_tune.training_files`
 
-Required:
-
-- `id` (String) File Identifier
-
 Read-Only:
 
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
 - `filename` (String) Filename
 - `filepath` (String) Filepath
+- `id` (String) File Identifier
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
 
@@ -114,15 +108,12 @@ Read-Only:
 <a id="nestedatt--fine_tune--validation_files"></a>
 ### Nested Schema for `fine_tune.validation_files`
 
-Required:
-
-- `id` (String) File Identifier
-
 Read-Only:
 
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
 - `filename` (String) Filename
 - `filepath` (String) Filepath
+- `id` (String) File Identifier
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning

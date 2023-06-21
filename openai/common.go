@@ -66,3 +66,10 @@ func GetFilePath(filePath string) (*string, error) {
 	absFilePath := filepath.Join(configDir, filePath)
 	return &absFilePath, nil
 }
+
+func GetOpenAIAPIError(err error) *openai.APIError {
+	if openaierr, ok := err.(*openai.APIError); ok {
+		return openaierr
+	}
+	return nil
+}
