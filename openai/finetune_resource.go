@@ -242,7 +242,6 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 				var fineTuneEvent openai.FineTuneEvent
 				err := json.Unmarshal([]byte(event.Data), &fineTuneEvent)
 				tflog.Info(ctx, fmt.Sprintf("Fine -Tune Event: %s", fineTuneEvent.Message))
-				fmt.Printf("Fine -Tune Event: %s\n", fineTuneEvent.Message)
 				return err
 			},
 			func(err error) error {
@@ -291,22 +290,14 @@ func (r *FineTuneResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("Reading Fine-Tune with id: %s", data.Id.ValueString()))
 	fineTune, err := r.client.FineTunes().GetFineTune(data.Id.ValueString())
-
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to read Fine Tune, got error: %s", err))
 		return
 	}
 
-	data.FineTune, _ = types.ObjectValueFrom(context.TODO(), OpenAIFineTuneModel{}.AttrTypes(), fineTune)
-	data.Id = types.StringValue(fineTune.Id)
-	if len(fineTune.TrainingFiles) > 0 {
-		data.TrainingFile = types.StringValue(fineTune.TrainingFiles[0].Id)
-	}
-	if len(fineTune.ValidationFiles) > 0 {
-		data.ValidationFile = types.StringValue(fineTune.ValidationFiles[0].Id)
-	}
-	data.Model = types.StringValue(fineTune.Model)
+	data.FineTune, _ = types.ObjectValueFrom(ctx, data.FineTune.AttributeTypes(ctx), NewOpenAIFineTuneModel(fineTune))
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
