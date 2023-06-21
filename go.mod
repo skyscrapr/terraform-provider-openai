@@ -10,11 +10,11 @@ require (
 )
 
 // For local development
-replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
+// replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
 
 require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/skyscrapr/openai-sdk-go v0.0.0-20230619065909-d1e3156ff50a
+	github.com/skyscrapr/openai-sdk-go v0.0.0-20230621101012-bd23337cec2b
 )
 
 require (
