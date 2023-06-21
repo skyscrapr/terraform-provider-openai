@@ -76,6 +76,7 @@ Read-Only:
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
 - `filename` (String) Filename
+- `filepath` (String) Filepath
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
 
@@ -92,6 +93,7 @@ Read-Only:
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
 - `filename` (String) Filename
+- `filepath` (String) Filepath
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
 
@@ -108,5 +110,6 @@ Read-Only:
 - `bytes` (Number) File size in bytes
 - `created` (Number) Created Time
 - `filename` (String) Filename
+- `filepath` (String) Filepath
 - `object` (String) Object Type
 - `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning

@@ -14,6 +14,7 @@ type OpenAIFileModel struct {
 	Bytes    types.Int64  `tfsdk:"bytes"`
 	Created  types.Int64  `tfsdk:"created"`
 	Filename types.String `tfsdk:"filename"`
+	Filepath types.String `tfsdk:"filepath"`
 	Object   types.String `tfsdk:"object"`
 	Purpose  types.String `tfsdk:"purpose"`
 }
@@ -24,20 +25,26 @@ func (e OpenAIFileModel) AttrTypes() map[string]attr.Type {
 		"bytes":    types.Int64Type,
 		"created":  types.Int64Type,
 		"filename": types.StringType,
+		"filepath": types.StringType,
 		"object":   types.StringType,
 		"purpose":  types.StringType,
 	}
 }
 
-func NewOpenAIFileModel(f *openai.File) OpenAIFileModel {
+func NewOpenAIFileModelWithPath(f *openai.File, path string) OpenAIFileModel {
 	return OpenAIFileModel{
 		Id:       types.StringValue(f.Id),
 		Bytes:    types.Int64Value(f.Bytes),
 		Created:  types.Int64Value(f.CreatedAt),
 		Filename: types.StringValue(f.Filename),
+		Filepath: types.StringValue(path),
 		Object:   types.StringValue(f.Object),
 		Purpose:  types.StringValue(f.Purpose),
 	}
+}
+
+func NewOpenAIFileModel(f *openai.File) OpenAIFileModel {
+	return NewOpenAIFileModelWithPath(f, f.Filename)
 }
 
 // OpenAIFineTuneModel describes the OpenAI fine-tune model.

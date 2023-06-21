@@ -3,12 +3,14 @@ package openai
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/skyscrapr/openai-sdk-go/openai"
 )
 
@@ -49,6 +51,10 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"filename": schema.StringAttribute{
 				MarkdownDescription: "Filename",
+				Computed:            true,
+			},
+			"filepath": schema.StringAttribute{
+				MarkdownDescription: "Filename",
 				Required:            true,
 			},
 			"object": schema.StringAttribute{
@@ -60,7 +66,15 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:            true,
 				Default:             stringdefault.StaticString("fine-tune"),
 			},
+			// "timeouts": Timeouts(ctx, timeouts.Opts{
+			//     Delete: true,
+			// }),
 		},
+		// Blocks: map[string]schema.Block{
+		// 	"timeouts": Timeouts(ctx, timeouts.Opts{
+		//         Delete: true,
+		//     }),
+		// },
 	}
 }
 
@@ -74,7 +88,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	filePath, err := GetFilePath(data.Filename.ValueString())
+	filePath, err := GetFilePath(data.Filepath.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("UploadFile", fmt.Sprintf("Unable to upload %s, got error: %s", *filePath, err))
 		return
@@ -90,7 +104,7 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	tflog.Trace(ctx, "Uploaded file successfully")
 
-	data = NewOpenAIFileModel(file)
+	data = NewOpenAIFileModelWithPath(file, data.Filepath.ValueString())
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -113,7 +127,7 @@ func (r *FileResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	data = NewOpenAIFileModel(file)
+	data = NewOpenAIFileModelWithPath(file, data.Filepath.ValueString())
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -133,15 +147,30 @@ func (r *FileResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	bDeleted, err := r.client.Files().DeleteFile(data.Id.ValueString())
+	// HACK: Could not implement timeouts due to error
+	destroyTimeout := 20 * time.Minute
+
+	err := retry.RetryContext(ctx, destroyTimeout, func() *retry.RetryError {
+		bDeleted, err := r.client.Files().DeleteFile(data.Id.ValueString())
+		if err != nil {
+			if openaierr, ok := err.(*openai.APIError); ok {
+				if openaierr.HTTPStatusCode == 409 {
+					tflog.Info(ctx, fmt.Sprintf("%s - Retrying...", err))
+					return retry.RetryableError(err)
+				}
+			}
+			return retry.NonRetryableError(err)
+		}
+		if bDeleted {
+			tflog.Trace(ctx, "File deleted successfully")
+		} else {
+			tflog.Trace(ctx, "File not deleted")
+		}
+		return nil
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete File, got error: %s", err))
 		return
-	}
-	if bDeleted {
-		tflog.Trace(ctx, "File deleted successfully")
-	} else {
-		tflog.Trace(ctx, "File not deleted")
 	}
 }
 
@@ -165,6 +194,10 @@ func openAIFileResourceAttributes() map[string]schema.Attribute {
 		},
 		"filename": schema.StringAttribute{
 			MarkdownDescription: "Filename",
+			Computed:            true,
+		},
+		"filepath": schema.StringAttribute{
+			MarkdownDescription: "Filepath",
 			Computed:            true,
 		},
 		"object": schema.StringAttribute{

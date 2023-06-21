@@ -74,6 +74,10 @@ func openAIFileAttributes() map[string]schema.Attribute {
 			MarkdownDescription: "Filename",
 			Computed:            true,
 		},
+		"filepath": schema.StringAttribute{
+			MarkdownDescription: "Filepath",
+			Computed:            true,
+		},
 		"object": schema.StringAttribute{
 			MarkdownDescription: "Object Type",
 			Computed:            true,
