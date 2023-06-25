@@ -2,7 +2,6 @@ package openai
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -238,15 +237,9 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 		tflog.Info(ctx, "Begin Streaming")
 		err = r.client.FineTunes().SubscribeFineTuneEvents(
 			fineTune.Id,
-			func(event *openai.SSEEvent) error {
-				var fineTuneEvent openai.FineTuneEvent
-				err := json.Unmarshal([]byte(event.Data), &fineTuneEvent)
-				tflog.Info(ctx, fmt.Sprintf("Fine -Tune Event: %s", fineTuneEvent.Message))
-				return err
-			},
-			func(err error) error {
-				tflog.Error(ctx, fmt.Sprintf("Fine-Tune Event Error: %s", err))
-				return err
+			func(event *openai.FineTuneEvent) error {
+				tflog.Info(ctx, fmt.Sprintf("Fine -Tune Event: %s", event.Message))
+				return nil
 			},
 		)
 		if err != nil {
