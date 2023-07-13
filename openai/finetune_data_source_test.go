@@ -7,9 +7,8 @@ import (
 )
 
 func TestAccFineTuneDataSource(t *testing.T) {
-	t.Skip("Cost associated with test")
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { testAccOpenAI(t); testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing

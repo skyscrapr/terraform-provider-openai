@@ -24,7 +24,7 @@ func testAccPreCheck(t *testing.T) {
 
 func testAccOpenAI(t *testing.T) {
 	// Use this to skip tests that might take a long time or cost too much
-	if os.Getenv("TF_ACC_OPENAI") != "" {
+	if os.Getenv("TF_ACC_OPENAI") == "" {
 		t.Skipf("env var TF_ACC_OPENAI not set. Skipping acceptance test")
 	}
 }
