@@ -232,6 +232,8 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 	tflog.Info(ctx, "FineTune created successfully")
+	data.Id = types.StringValue(fineTune.Id)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	if !data.Wait.IsUnknown() && data.Wait.ValueBool() {
 		tflog.Info(ctx, "Begin Streaming")
