@@ -238,6 +238,7 @@ func (r *FineTuneResource) Create(ctx context.Context, req resource.CreateReques
 	if !data.Wait.IsUnknown() && data.Wait.ValueBool() {
 		tflog.Info(ctx, "Begin Streaming")
 		err = r.client.FineTunes().SubscribeFineTuneEvents(
+			ctx,
 			fineTune.Id,
 			func(event *openai.FineTuneEvent) error {
 				tflog.Info(ctx, fmt.Sprintf("Fine -Tune Event: %s", event.Message))
