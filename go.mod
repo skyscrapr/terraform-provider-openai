@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.3.5
 	github.com/hashicorp/terraform-plugin-go v0.18.0
-	github.com/hashicorp/terraform-plugin-testing v1.4.0
+	github.com/hashicorp/terraform-plugin-testing v1.5.0
 )
 
 // For local development
@@ -17,7 +17,7 @@ require (
 	github.com/skyscrapr/openai-sdk-go v0.0.0-20230825044228-745a740fc9ed
 )
 
-require golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
+require golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -69,7 +69,7 @@ require (
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/zclconf/go-cty v1.13.2 // indirect
+	github.com/zclconf/go-cty v1.13.3 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
