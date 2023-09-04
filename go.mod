@@ -14,7 +14,7 @@ require (
 
 require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/skyscrapr/openai-sdk-go v0.0.0-20230825044228-745a740fc9ed
+	github.com/skyscrapr/openai-sdk-go v0.0.0-20230904230920-3da82cfe3725
 )
 
 require golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
@@ -39,7 +39,7 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-plugin v1.4.10 // indirect
+	github.com/hashicorp/go-plugin v1.5.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hc-install v0.5.2 // indirect
@@ -73,8 +73,8 @@ require (
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/grpc v1.57.0 // indirect

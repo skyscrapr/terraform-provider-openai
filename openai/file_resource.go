@@ -66,15 +66,7 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:            true,
 				Default:             stringdefault.StaticString("fine-tune"),
 			},
-			// "timeouts": Timeouts(ctx, timeouts.Opts{
-			//     Delete: true,
-			// }),
 		},
-		// Blocks: map[string]schema.Block{
-		// 	"timeouts": Timeouts(ctx, timeouts.Opts{
-		//         Delete: true,
-		//     }),
-		// },
 	}
 }
 

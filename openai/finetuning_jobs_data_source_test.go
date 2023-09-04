@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccFineTunesDataSource(t *testing.T) {
+func TestAccFineTuningJobsDataSource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -16,7 +16,7 @@ func TestAccFineTunesDataSource(t *testing.T) {
 				Config: testAccFineTunesDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify ID has any value set
-					resource.TestCheckResourceAttrSet("data.openai_finetunes.test", "id"),
+					resource.TestCheckResourceAttrSet("data.openai_finetuning_jobs.test", "id"),
 				),
 			},
 		},
@@ -24,5 +24,5 @@ func TestAccFineTunesDataSource(t *testing.T) {
 }
 
 const testAccFineTunesDataSourceConfig = `
-data "openai_finetunes" "test" {}
+data "openai_finetuning_jobs" "test" {}
 `
