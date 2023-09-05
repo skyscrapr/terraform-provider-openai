@@ -3,8 +3,10 @@ package openai
 import (
 	"context"
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -20,17 +22,17 @@ type FineTuningJobDataSource struct {
 }
 
 func (d *FineTuningJobDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_finetune"
+	resp.TypeName = req.ProviderTypeName + "_finetuning_job"
 }
 
 func (d *FineTuningJobDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Fine-Tine data source",
+		MarkdownDescription: "Fine-Tuning Job data source",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "File Identifier",
+				MarkdownDescription: "Fine Tuning Job Identifier",
 				Required:            true,
 			},
 			"object": schema.StringAttribute{
@@ -79,44 +81,13 @@ func (d *FineTuningJobDataSource) Schema(ctx context.Context, req datasource.Sch
 				MarkdownDescription: "Training File",
 				Computed:            true,
 			},
-			"result_files": schema.ListNestedAttribute{
+			"result_files": schema.ListAttribute{
 				MarkdownDescription: "Result Files",
+				ElementType:         types.StringType,
 				Computed:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							MarkdownDescription: "File Identifier",
-							Required:            true,
-						},
-						"bytes": schema.Int64Attribute{
-							MarkdownDescription: "File size in bytes",
-							Computed:            true,
-						},
-						"created": schema.Int64Attribute{
-							MarkdownDescription: "Created Time",
-							Computed:            true,
-						},
-						"filename": schema.StringAttribute{
-							MarkdownDescription: "Filename",
-							Computed:            true,
-						},
-						"filepath": schema.StringAttribute{
-							MarkdownDescription: "Filepath",
-							Computed:            true,
-						},
-						"object": schema.StringAttribute{
-							MarkdownDescription: "Object Type",
-							Computed:            true,
-						},
-						"purpose": schema.StringAttribute{
-							MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
-							Computed:            true,
-						},
-					},
-				},
 			},
-			"suffix": schema.StringAttribute{
-				MarkdownDescription: "Suffix",
+			"trained_tokens": schema.Int64Attribute{
+				MarkdownDescription: "Trained Tokens",
 				Computed:            true,
 			},
 		},

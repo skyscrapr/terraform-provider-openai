@@ -32,7 +32,7 @@ Fine Tuning Job resource
 - `id` (String) Fine Tuning Job Identifier
 - `object` (String) Object Type
 - `organization_id` (String) Organization Id
-- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--result_files))
+- `result_files` (List of String) Result Files
 - `status` (String) Status
 - `trained_tokens` (Number) Trained Tokens
 
@@ -41,18 +41,4 @@ Fine Tuning Job resource
 
 Optional:
 
-- `n_epochs` (String) N Epochs
-
-
-<a id="nestedatt--result_files"></a>
-### Nested Schema for `result_files`
-
-Read-Only:
-
-- `bytes` (Number) File size in bytes
-- `created` (Number) Created Time
-- `filename` (String) Filename
-- `filepath` (String) Filepath
-- `id` (String) File Identifier
-- `object` (String) Object Type
-- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
+- `n_epochs` (Number) N Epochs

@@ -15,7 +15,7 @@ func TestAccFineTuneDataSource(t *testing.T) {
 			{
 				Config: testAccFineTuneDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.openai_finetune.test", "id"),
+					resource.TestCheckResourceAttrSet("data.openai_finetuning_job.test", "id"),
 				),
 			},
 		},
@@ -23,7 +23,10 @@ func TestAccFineTuneDataSource(t *testing.T) {
 }
 
 const testAccFineTuneDataSourceConfig = `
-data "openai_finetune" "test" {
-	id = "ft-UV2XKz7N4T9O5WkB7ojzmg6a"
+data "openai_finetuning_jobs" "test" {
+}
+
+data "openai_finetuning_job" "test" {
+	id = data.openai_finetuning_jobs.test.jobs[0].id
 }
 `

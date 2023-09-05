@@ -47,7 +47,6 @@ func NewOpenAIFileModel(f *openai.File) OpenAIFileModel {
 	return NewOpenAIFileModelWithPath(f, f.Filename)
 }
 
-// OpenAIFineTuningJobModel describes the OpenAI fine-tuning job model.
 type OpenAIFineTuningJobModel struct {
 	Id             types.String `tfsdk:"id"`
 	Object         types.String `tfsdk:"object"`
@@ -62,8 +61,6 @@ type OpenAIFineTuningJobModel struct {
 	ValidationFile types.String `tfsdk:"validation_file"`
 	ResultFiles    types.List   `tfsdk:"result_files"`
 	TrainedTokens  types.Int64  `tfsdk:"trained_tokens"`
-	Suffix         types.String `tfsdk:"suffix"`
-	Wait           types.Bool   `tfsdk:"wait"`
 }
 
 func (e OpenAIFineTuningJobModel) AttrTypes() map[string]attr.Type {
@@ -79,7 +76,7 @@ func (e OpenAIFineTuningJobModel) AttrTypes() map[string]attr.Type {
 		"hyperparams":      types.ObjectType{AttrTypes: OpenAIFineTuningJobHyperparamsModel{}.AttrTypes()},
 		"training_file":    types.StringType,
 		"validation_file":  types.StringType,
-		"result_files":     types.ListType{ElemType: types.ObjectType{AttrTypes: OpenAIFileModel{}.AttrTypes()}},
+		"result_files":     types.ListType{ElemType: types.StringType},
 		"trained_tokens":   types.Int64Type,
 	}
 }
@@ -104,8 +101,62 @@ func NewOpenAIFineTuningJobModel(ft *openai.FineTuningJob) OpenAIFineTuningJobMo
 		ftJobModel.ValidationFile = types.StringValue(*ft.ValidationFile)
 	}
 
-	ftJobModel.Hyperparams, _ = types.ObjectValueFrom(ctx, OpenAIFineTuningJobHyperparamsModel{}.AttrTypes(), ft.Hyperparams)
-	ftJobModel.ResultFiles, _ = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OpenAIFileModel{}.AttrTypes()}, ft.ResultFiles)
+	h := OpenAIFineTuningJobHyperparamsModel{
+		NEpochs: types.Int64Value(ft.Hyperparams.NEpochs),
+	}
+	ftJobModel.Hyperparams, _ = types.ObjectValueFrom(ctx, OpenAIFineTuningJobHyperparamsModel{}.AttrTypes(), h)
+
+	ftJobModel.ResultFiles, _ = types.ListValueFrom(ctx, types.StringType, ft.ResultFiles)
+
+	return ftJobModel
+}
+
+type OpenAIFineTuningJobResourceModel struct {
+	Id             types.String `tfsdk:"id"`
+	Object         types.String `tfsdk:"object"`
+	CreatedAt      types.Int64  `tfsdk:"created_at"`
+	FinishedAt     types.Int64  `tfsdk:"finished_at"`
+	Model          types.String `tfsdk:"model"`
+	FineTunedModel types.String `tfsdk:"fine_tuned_model"`
+	OrganizationId types.String `tfsdk:"organization_id"`
+	Status         types.String `tfsdk:"status"`
+	Hyperparams    types.Object `tfsdk:"hyperparams"`
+	TrainingFile   types.String `tfsdk:"training_file"`
+	ValidationFile types.String `tfsdk:"validation_file"`
+	ResultFiles    types.List   `tfsdk:"result_files"`
+	TrainedTokens  types.Int64  `tfsdk:"trained_tokens"`
+	Suffix         types.String `tfsdk:"suffix"`
+	Wait           types.Bool   `tfsdk:"wait"`
+}
+
+func NewOpenAIFineTuningJobResourceModel(ft *openai.FineTuningJob) OpenAIFineTuningJobResourceModel {
+	ctx := context.TODO()
+
+	ftJobModel := OpenAIFineTuningJobResourceModel{
+		Id:             types.StringValue(ft.Id),
+		Object:         types.StringValue(ft.Object),
+		CreatedAt:      types.Int64Value(ft.CreatedAt),
+		FinishedAt:     types.Int64Value(ft.FinishedAt),
+		Model:          types.StringValue(ft.Model),
+		FineTunedModel: types.StringValue(ft.FineTunedModel),
+		OrganizationId: types.StringValue(ft.OrganizationId),
+		Status:         types.StringValue(ft.Status),
+		TrainingFile:   types.StringValue(ft.TrainingFile),
+		TrainedTokens:  types.Int64Value(ft.TrainedTokens),
+		Suffix:         types.StringValue(""),
+		Wait:           types.BoolValue(false),
+	}
+
+	if ft.ValidationFile != nil {
+		ftJobModel.ValidationFile = types.StringValue(*ft.ValidationFile)
+	}
+
+	h := OpenAIFineTuningJobHyperparamsModel{
+		NEpochs: types.Int64Value(ft.Hyperparams.NEpochs),
+	}
+	ftJobModel.Hyperparams, _ = types.ObjectValueFrom(ctx, OpenAIFineTuningJobHyperparamsModel{}.AttrTypes(), h)
+
+	ftJobModel.ResultFiles, _ = types.ListValueFrom(ctx, types.StringType, ft.ResultFiles)
 
 	return ftJobModel
 }
@@ -132,6 +183,6 @@ type OpenAIFineTuningJobHyperparamsModel struct {
 
 func (e OpenAIFineTuningJobHyperparamsModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"n_epochs": types.StringType,
+		"n_epochs": types.Int64Type,
 	}
 }

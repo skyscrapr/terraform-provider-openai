@@ -181,36 +181,3 @@ func (r *FileResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 func (r *FileResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
-
-func openAIFileResourceAttributes() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			MarkdownDescription: "File Identifier",
-			Computed:            true,
-		},
-		"bytes": schema.Int64Attribute{
-			MarkdownDescription: "File size in bytes",
-			Computed:            true,
-		},
-		"created": schema.Int64Attribute{
-			MarkdownDescription: "Created Time",
-			Computed:            true,
-		},
-		"filename": schema.StringAttribute{
-			MarkdownDescription: "Filename",
-			Computed:            true,
-		},
-		"filepath": schema.StringAttribute{
-			MarkdownDescription: "Filepath",
-			Computed:            true,
-		},
-		"object": schema.StringAttribute{
-			MarkdownDescription: "Object Type",
-			Computed:            true,
-		},
-		"purpose": schema.StringAttribute{
-			MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
-			Computed:            true,
-		},
-	}
-}

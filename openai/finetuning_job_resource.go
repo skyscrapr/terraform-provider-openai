@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -73,7 +74,7 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 				MarkdownDescription: "Hyperparams",
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
-					"n_epochs": schema.StringAttribute{
+					"n_epochs": schema.Int64Attribute{
 						MarkdownDescription: "N Epochs",
 						Optional:            true,
 					},
@@ -91,12 +92,10 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 				MarkdownDescription: "Suffix",
 				Optional:            true,
 			},
-			"result_files": schema.ListNestedAttribute{
+			"result_files": schema.ListAttribute{
 				MarkdownDescription: "Result Files",
+				ElementType:         types.StringType,
 				Computed:            true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: openAIFileResourceAttributes(),
-				},
 			},
 			"trained_tokens": schema.Int64Attribute{
 				MarkdownDescription: "Trained Tokens",
@@ -111,7 +110,7 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 }
 
 func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data OpenAIFineTuningJobModel
+	var data OpenAIFineTuningJobResourceModel
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -150,7 +149,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 	tflog.Info(ctx, "FineTuning Job created successfully")
-	data = NewOpenAIFineTuningJobModel(ftJob)
+	data = NewOpenAIFineTuningJobResourceModel(ftJob)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	if !data.Wait.IsUnknown() && data.Wait.ValueBool() {
@@ -173,7 +172,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
-			data = NewOpenAIFineTuningJobModel(ftJob)
+			data = NewOpenAIFineTuningJobResourceModel(ftJob)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 			switch ftJob.Status {
@@ -193,7 +192,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 }
 
 func (r *FineTuningJobResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data OpenAIFineTuningJobModel
+	var data OpenAIFineTuningJobResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -209,7 +208,7 @@ func (r *FineTuningJobResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	data = NewOpenAIFineTuningJobModel(ftJob)
+	data = NewOpenAIFineTuningJobResourceModel(ftJob)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -220,7 +219,7 @@ func (r *FineTuningJobResource) Update(ctx context.Context, req resource.UpdateR
 }
 
 func (r *FineTuningJobResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data OpenAIFineTuningJobModel
+	var data OpenAIFineTuningJobResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

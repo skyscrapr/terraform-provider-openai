@@ -25,8 +25,8 @@ type FineTuningJobsDataSource struct {
 
 // FineTuningJobsModel describes the data source data model.
 type FineTuningJobsModel struct {
-	Id             types.String               `tfsdk:"id"`
-	FineTuningJobs []OpenAIFineTuningJobModel `tfsdk:"finetuning_jobs"`
+	Id   types.String               `tfsdk:"id"`
+	Jobs []OpenAIFineTuningJobModel `tfsdk:"jobs"`
 }
 
 func (d *FineTuningJobsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -43,13 +43,13 @@ func (d *FineTuningJobsDataSource) Schema(ctx context.Context, req datasource.Sc
 				MarkdownDescription: "Fine-Tuning Jobs identifier",
 				Computed:            true,
 			},
-			"finetuning_jobs": schema.ListNestedAttribute{
+			"jobs": schema.ListNestedAttribute{
 				MarkdownDescription: "Fine Tuning Jobs",
 				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							MarkdownDescription: "File Identifier",
+							MarkdownDescription: "Fine-Tuning Job Identifier",
 							Required:            true,
 						},
 						"object": schema.StringAttribute{
@@ -90,52 +90,21 @@ func (d *FineTuningJobsDataSource) Schema(ctx context.Context, req datasource.Sc
 								},
 							},
 						},
-						"validation_file": schema.StringAttribute{
-							MarkdownDescription: "Validation File",
-							Computed:            true,
-						},
 						"training_file": schema.StringAttribute{
 							MarkdownDescription: "Training File",
 							Computed:            true,
 						},
-						"result_files": schema.ListNestedAttribute{
-							MarkdownDescription: "Result Files",
+						"validation_file": schema.StringAttribute{
+							MarkdownDescription: "Validation File",
 							Computed:            true,
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										MarkdownDescription: "File Identifier",
-										Required:            true,
-									},
-									"bytes": schema.Int64Attribute{
-										MarkdownDescription: "File size in bytes",
-										Computed:            true,
-									},
-									"created": schema.Int64Attribute{
-										MarkdownDescription: "Created Time",
-										Computed:            true,
-									},
-									"filename": schema.StringAttribute{
-										MarkdownDescription: "Filename",
-										Computed:            true,
-									},
-									"filepath": schema.StringAttribute{
-										MarkdownDescription: "Filepath",
-										Computed:            true,
-									},
-									"object": schema.StringAttribute{
-										MarkdownDescription: "Object Type",
-										Computed:            true,
-									},
-									"purpose": schema.StringAttribute{
-										MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
-										Computed:            true,
-									},
-								},
-							},
 						},
-						"suffix": schema.StringAttribute{
-							MarkdownDescription: "Suffix",
+						"result_files": schema.ListAttribute{
+							MarkdownDescription: "Result Files",
+							ElementType:         types.StringType,
+							Computed:            true,
+						},
+						"trained_tokens": schema.Int64Attribute{
+							MarkdownDescription: "Trained Tokens",
 							Computed:            true,
 						},
 					},
@@ -155,15 +124,15 @@ func (d *FineTuningJobsDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	ftJobs, err := d.client.FineTuning().ListFineTuningJobs(nil, nil)
+	jobs, err := d.client.FineTuning().ListFineTuningJobs(nil, nil)
 
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to read Fine Tuning Jobs, got error: %s", err))
 		return
 	}
 
-	for _, f := range ftJobs {
-		data.FineTuningJobs = append(data.FineTuningJobs, NewOpenAIFineTuningJobModel(&f))
+	for _, job := range jobs {
+		data.Jobs = append(data.Jobs, NewOpenAIFineTuningJobModel(&job))
 	}
 	data.Id = types.StringValue(strconv.FormatInt(time.Now().Unix(), 10))
 

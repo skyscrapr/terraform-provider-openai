@@ -17,51 +17,34 @@ Fine-Tuning Jobs data source
 
 ### Read-Only
 
-- `finetuning_jobs` (Attributes List) Fine Tuning Jobs (see [below for nested schema](#nestedatt--finetuning_jobs))
 - `id` (String) Fine-Tuning Jobs identifier
+- `jobs` (Attributes List) Fine Tuning Jobs (see [below for nested schema](#nestedatt--jobs))
 
-<a id="nestedatt--finetuning_jobs"></a>
-### Nested Schema for `finetuning_jobs`
+<a id="nestedatt--jobs"></a>
+### Nested Schema for `jobs`
 
 Required:
 
-- `id` (String) File Identifier
+- `id` (String) Fine-Tuning Job Identifier
 
 Read-Only:
 
 - `created_at` (Number) Created Time
 - `fine_tuned_model` (String) Fine-Tuned Model ID
 - `finished_at` (Number) Finished Time
-- `hyperparams` (Attributes) Hyperparams (see [below for nested schema](#nestedatt--finetuning_jobs--hyperparams))
+- `hyperparams` (Attributes) Hyperparams (see [below for nested schema](#nestedatt--jobs--hyperparams))
 - `model` (String) Model ID
 - `object` (String) Object Type
 - `organization_id` (String) Organization ID
-- `result_files` (Attributes List) Result Files (see [below for nested schema](#nestedatt--finetuning_jobs--result_files))
+- `result_files` (List of String) Result Files
 - `status` (String) Status
-- `suffix` (String) Suffix
+- `trained_tokens` (Number) Trained Tokens
 - `training_file` (String) Training File
 - `validation_file` (String) Validation File
 
-<a id="nestedatt--finetuning_jobs--hyperparams"></a>
-### Nested Schema for `finetuning_jobs.hyperparams`
+<a id="nestedatt--jobs--hyperparams"></a>
+### Nested Schema for `jobs.hyperparams`
 
 Read-Only:
 
 - `n_epochs` (Number) N Epochs
-
-
-<a id="nestedatt--finetuning_jobs--result_files"></a>
-### Nested Schema for `finetuning_jobs.result_files`
-
-Required:
-
-- `id` (String) File Identifier
-
-Read-Only:
-
-- `bytes` (Number) File size in bytes
-- `created` (Number) Created Time
-- `filename` (String) Filename
-- `filepath` (String) Filepath
-- `object` (String) Object Type
-- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
