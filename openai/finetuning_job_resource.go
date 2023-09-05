@@ -155,8 +155,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 
 	if !data.Wait.IsUnknown() && data.Wait.ValueBool() {
 		tflog.Info(ctx, "Waiting for fine tuning job completion...")
-		var lastEvent *string
-		lastEvent = nil
+		var lastEvent *string = nil
 
 		err := retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
 			events, err := r.client.FineTuning().ListFineTuningEvents(ftJob.Id, lastEvent, nil)
@@ -167,7 +166,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 
 			for _, event := range events {
 				tflog.Info(ctx, fmt.Sprintf("Fine-Tuning Event: %s", event.Message))
-				lastEvent = &event.Id
+				*lastEvent = event.Id
 			}
 			// Update finetuning job state
 			ftJob, err = r.client.FineTuning().GetFineTuningJob(ftJob.Id)
