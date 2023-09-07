@@ -30,7 +30,7 @@ func TestAccFineTuningJobResource(t *testing.T) {
 				// example code does not have an actual upstream service.
 				// Once the Read method is able to refresh information from
 				// the upstream service, this can be removed.
-				// ImportStateVerifyIgnore: []string{"compute_classification_metrics", "classification_n_classes", "classification_positive_class", "classification_betas", "suffix"},
+				ImportStateVerifyIgnore: []string{"wait"},
 			},
 			// // Update and Read testing
 			// {
@@ -58,7 +58,7 @@ resource "openai_finetuning_job" "test" {
 	training_file                  = openai_file.training_file.id
 	validation_file                = openai_file.validation_file.id
 	model                          = "babbage-002"
-	wait = false
+	wait = true
 }
 `, training_file, validation_file)
 }

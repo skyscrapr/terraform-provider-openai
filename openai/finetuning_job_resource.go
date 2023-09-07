@@ -72,11 +72,11 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 			},
 			"hyperparams": schema.SingleNestedAttribute{
 				MarkdownDescription: "Hyperparams",
-				Optional:            true,
+				Computed:            true,
 				Attributes: map[string]schema.Attribute{
 					"n_epochs": schema.Int64Attribute{
 						MarkdownDescription: "N Epochs",
-						Optional:            true,
+						Computed:            true,
 					},
 				},
 			},
@@ -90,7 +90,8 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 			},
 			"suffix": schema.StringAttribute{
 				MarkdownDescription: "Suffix",
-				Optional:            true,
+				Computed:            true,
+				// Default: stringdefault.StaticString(""),
 			},
 			"result_files": schema.ListAttribute{
 				MarkdownDescription: "Result Files",
@@ -149,7 +150,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 	tflog.Info(ctx, "FineTuning Job created successfully")
-	data = NewOpenAIFineTuningJobResourceModel(ftJob)
+	data = NewOpenAIFineTuningJobResourceModel(ftJob, data.Wait.ValueBool())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	if !data.Wait.IsUnknown() && data.Wait.ValueBool() {
@@ -161,24 +162,25 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
-			tflog.Trace(ctx, "Fine Tuning Events obtained successfully")
+			tflog.Info(ctx, "Fine Tuning Events obtained successfully")
 
 			for _, event := range events {
 				tflog.Info(ctx, fmt.Sprintf("Fine-Tuning Event: %s", event.Message))
-				*lastEvent = event.Id
+				lastEvent = &event.Id
 			}
 			// Update finetuning job state
 			ftJob, err = r.client.FineTuning().GetFineTuningJob(ftJob.Id)
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
-			data = NewOpenAIFineTuningJobResourceModel(ftJob)
+			data = NewOpenAIFineTuningJobResourceModel(ftJob, data.Wait.ValueBool())
 			resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 			switch ftJob.Status {
 			case "succeeded":
 				return nil
-			case "running":
+			case "created", "running":
+				tflog.Info(ctx, fmt.Sprintf("Fine-Tuning Job State: %s... Retrying...", ftJob.Status))
 				return retry.RetryableError(fmt.Errorf("fine tuning job still running"))
 			default:
 				return retry.NonRetryableError(fmt.Errorf("unexpected job status: %s", ftJob.Status))
@@ -208,7 +210,7 @@ func (r *FineTuningJobResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	data = NewOpenAIFineTuningJobResourceModel(ftJob)
+	data = NewOpenAIFineTuningJobResourceModel(ftJob, data.Wait.ValueBool())
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

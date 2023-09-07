@@ -129,7 +129,7 @@ type OpenAIFineTuningJobResourceModel struct {
 	Wait           types.Bool   `tfsdk:"wait"`
 }
 
-func NewOpenAIFineTuningJobResourceModel(ft *openai.FineTuningJob) OpenAIFineTuningJobResourceModel {
+func NewOpenAIFineTuningJobResourceModel(ft *openai.FineTuningJob, wait bool) OpenAIFineTuningJobResourceModel {
 	ctx := context.TODO()
 
 	ftJobModel := OpenAIFineTuningJobResourceModel{
@@ -144,7 +144,7 @@ func NewOpenAIFineTuningJobResourceModel(ft *openai.FineTuningJob) OpenAIFineTun
 		TrainingFile:   types.StringValue(ft.TrainingFile),
 		TrainedTokens:  types.Int64Value(ft.TrainedTokens),
 		Suffix:         types.StringValue(""),
-		Wait:           types.BoolValue(false),
+		Wait:           types.BoolValue(wait),
 	}
 
 	if ft.ValidationFile != nil {

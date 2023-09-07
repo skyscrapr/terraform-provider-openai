@@ -8,6 +8,6 @@ terraform {
 
 provider "openai" {}
 
-data "openai_finetunes" "test" {
+data "openai_finetuning_jobs" "test" {
 
 }
