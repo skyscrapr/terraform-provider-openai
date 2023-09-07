@@ -166,8 +166,11 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 
 			for _, event := range events {
 				tflog.Info(ctx, fmt.Sprintf("Fine-Tuning Event: %s", event.Message))
-				lastEvent = &event.Id
 			}
+			if len(events) > 0 {
+				lastEvent = &events[len(events)-1].Id
+			}
+
 			// Update finetuning job state
 			ftJob, err = r.client.FineTuning().GetFineTuningJob(ftJob.Id)
 			if err != nil {
