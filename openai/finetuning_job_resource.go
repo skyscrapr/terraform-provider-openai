@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -55,8 +57,11 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 				Computed:            true,
 			},
 			"model": schema.StringAttribute{
-				MarkdownDescription: "Model Identifier",
+				MarkdownDescription: "Model Identifier", 
 				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+                    stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"fine_tuned_model": schema.StringAttribute{
 				MarkdownDescription: "Fine Tuned Model",
@@ -182,7 +187,7 @@ func (r *FineTuningJobResource) Create(ctx context.Context, req resource.CreateR
 			switch ftJob.Status {
 			case "succeeded":
 				return nil
-			case "created", "running":
+			case "created", "running", "validating_files", "queued":
 				tflog.Info(ctx, fmt.Sprintf("Fine-Tuning Job State: %s... Retrying...", ftJob.Status))
 				return retry.RetryableError(fmt.Errorf("fine tuning job still running"))
 			default:
