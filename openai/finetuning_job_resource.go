@@ -57,10 +57,10 @@ func (r *FineTuningJobResource) Schema(ctx context.Context, req resource.SchemaR
 				Computed:            true,
 			},
 			"model": schema.StringAttribute{
-				MarkdownDescription: "Model Identifier", 
+				MarkdownDescription: "Model Identifier",
 				Optional:            true,
 				PlanModifiers: []planmodifier.String{
-                    stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"fine_tuned_model": schema.StringAttribute{
