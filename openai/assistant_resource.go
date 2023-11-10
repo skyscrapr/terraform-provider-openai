@@ -172,7 +172,7 @@ func (r *AssistantResource) Read(ctx context.Context, req resource.ReadRequest, 
 	tflog.Info(ctx, fmt.Sprintf("Reading Assistant with id: %s", data.Id.ValueString()))
 	assistant, err := r.client.Assistants().RetrieveAssistant(data.Id.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to retreive assistant, got error: %s", err))
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to retrieve assistant, got error: %s", err))
 		return
 	}
 
