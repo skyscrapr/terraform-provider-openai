@@ -79,6 +79,7 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *OpenAIProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewAssistantResource,
 		NewFileResource,
 		NewFineTuningJobResource,
 	}
