@@ -1,0 +1,240 @@
+package openai
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/skyscrapr/openai-sdk-go/openai"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.Resource = &FineTuningJobResource{}
+var _ resource.ResourceWithImportState = &FineTuningJobResource{}
+
+func NewAssistantResource() resource.Resource {
+	return &AssistantResource{OpenAIResource: &OpenAIResource{}}
+}
+
+// AssistantResource defines the resource implementation.
+type AssistantResource struct {
+	*OpenAIResource
+}
+
+func (r *AssistantResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_assistant"
+}
+
+func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Assistant resource",
+
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				MarkdownDescription: "The identifier, which can be referenced in API endpoints.",
+				Computed:            true,
+			},
+			"object": schema.StringAttribute{
+				MarkdownDescription: "The object type, which is always assistant.",
+				Computed:            true,
+			},
+			"created_at": schema.Int64Attribute{
+				MarkdownDescription: "The Unix timestamp (in seconds) for when the assistant was created.",
+				Computed:            true,
+			},
+			"name": schema.StringAttribute{
+				MarkdownDescription: "The name of the assistant. The maximum length is 256 characters.",
+				Optional:            true,
+			},
+			"description": schema.StringAttribute{
+				MarkdownDescription: "The description of the assistant. The maximum length is 512 characters.",
+				Optional:            true,
+			},
+			"model": schema.StringAttribute{
+				MarkdownDescription: "ID of the model to use. You can use the List models API to see all of your available models.",
+				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"instructions": schema.StringAttribute{
+				MarkdownDescription: "The system instructions that the assistant uses. The maximum length is 32768 characters.",
+				Optional:            true,
+			},
+			"file_ids": schema.ListAttribute{
+				MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
+				ElementType:         types.StringType,
+				Optional:            true,
+			},
+			"tools": schema.ListNestedAttribute{
+				MarkdownDescription: "A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function.",
+				Optional:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"type": schema.StringAttribute{
+							MarkdownDescription: "Tools can be of types code_interpreter, retrieval, or function.",
+							Required:            true,
+						},
+						"function": schema.SingleNestedAttribute{
+							MarkdownDescription: "Function definition for tools of type function.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"description": schema.StringAttribute{
+									MarkdownDescription: "A description of what the function does, used by the model to choose when and how to call the function.",
+									Optional:            true,
+								},
+								"name": schema.StringAttribute{
+									MarkdownDescription: "The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.",
+									Required:            true,
+								},
+								"parameters": schema.StringAttribute{
+									MarkdownDescription: "The parameters the functions accepts, described as a JSON Schema object.",
+									Required:            true,
+								},
+							},
+						},
+					},
+				},
+			},
+			"metadata": schema.MapAttribute{
+				MarkdownDescription: "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.",
+				ElementType:         types.StringType,
+				Optional:            true,
+			},
+		},
+	}
+}
+
+func (r *AssistantResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data OpenAIAssistantResourceModel
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Info(ctx, "Creating Assistant...")
+
+	aReq := openai.AssistantRequest{
+		Model:        data.Model.ValueString(),
+		Name:         data.Name.ValueStringPointer(),
+		Description:  data.Description.ValueStringPointer(),
+		Instructions: data.Instructions.ValueStringPointer(),
+	}
+
+	var toolModels []OpenAIAssistantToolModel
+	resp.Diagnostics.Append(data.Tools.ElementsAs(ctx, &toolModels, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	aReq.Tools = expandAssistantTools(ctx, toolModels)
+
+	resp.Diagnostics.Append(data.FileIds.ElementsAs(ctx, &aReq.FileIds, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	assistant, err := r.client.Assistants().CreateAssistant(&aReq)
+	if err != nil {
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to create assistant, got error: %s", err))
+		return
+	}
+	tflog.Info(ctx, "Assistant created successfully")
+
+	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *AssistantResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data OpenAIAssistantResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Info(ctx, fmt.Sprintf("Reading Assistant with id: %s", data.Id.ValueString()))
+	assistant, err := r.client.Assistants().RetrieveAssistant(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to retreive assistant, got error: %s", err))
+		return
+	}
+
+	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	tflog.Trace(ctx, "Update not supported.")
+}
+
+func (r *AssistantResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data OpenAIAssistantResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Delete the assistant
+	tflog.Info(ctx, fmt.Sprintf("Deleting Assistant: %s", data.Id.ValueString()))
+	bDeleted, err := r.client.Assistants().DeleteAssistant(data.Id.ValueString())
+	if err != nil {
+		if err, ok := err.(*openai.APIError); ok {
+			fmt.Println("openai error:", err.Code)
+			// Or whatever other field(s) you need
+		}
+
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to delete assistant, got error: %s", err))
+		return
+	}
+	if !bDeleted {
+		tflog.Trace(ctx, "Assistant not deleted")
+	}
+	tflog.Trace(ctx, "Assistant deleted successfully")
+}
+
+func (r *AssistantResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func expandAssistantTools(ctx context.Context, tfList []OpenAIAssistantToolModel) []openai.AssistantTool {
+	if len(tfList) == 0 {
+		return nil
+	}
+	var tools []openai.AssistantTool
+
+	for _, item := range tfList {
+		tool := openai.AssistantTool{
+			Type: item.Type.ValueString(),
+		}
+		item.Function.As(ctx, tool.Function, basetypes.ObjectAsOptions{})
+		tools = append(tools, tool)
+	}
+
+	return tools
+}
