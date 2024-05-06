@@ -270,7 +270,8 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 
 	if assistant.ToolResources != nil {
 		model.ToolResources = &OpenAIAssistantToolResourcesModel{}
-		// TODO: Complete this section
+		model.ToolResources.CodeInterpreter, _ = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceCodeInterpreterModel{}.AttrTypes(), assistant.ToolResources.CodeInterpreter)
+		model.ToolResources.FileSearch, _ = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes(), assistant.ToolResources.FileSearch)
 	}
 	if diags.HasError() {
 		return model, diags
