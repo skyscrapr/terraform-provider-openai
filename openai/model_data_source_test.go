@@ -23,7 +23,9 @@ func TestAccModelDataSource(t *testing.T) {
 }
 
 const testAccModelDataSourceConfig = `
+data "openai_models" "test" {}
+
 data "openai_model" "test" {
-	id = "davinci"
+	id = data.openai_models.test.models[0].id
 }
 `
