@@ -189,34 +189,40 @@ func (e OpenAIFineTuningJobHyperparamsModel) AttrTypes() map[string]attr.Type {
 }
 
 type OpenAIAssistantResourceModel struct {
-	Id           types.String `tfsdk:"id"`
-	Object       types.String `tfsdk:"object"`
-	CreatedAt    types.Int64  `tfsdk:"created_at"`
-	Name         types.String `tfsdk:"name"`
-	Description  types.String `tfsdk:"description"`
-	Model        types.String `tfsdk:"model"`
-	Instructions types.String `tfsdk:"instructions"`
-	FileIds      types.List   `tfsdk:"file_ids"`
-	Tools        types.List   `tfsdk:"tools"`
-	Metadata     types.Map    `tfsdk:"metadata"`
+	Id            types.String                       `tfsdk:"id"`
+	Object        types.String                       `tfsdk:"object"`
+	CreatedAt     types.Int64                        `tfsdk:"created_at"`
+	Name          types.String                       `tfsdk:"name"`
+	Description   types.String                       `tfsdk:"description"`
+	Model         types.String                       `tfsdk:"model"`
+	Instructions  types.String                       `tfsdk:"instructions"`
+	Tools         types.List                         `tfsdk:"tools"`
+	ToolResources *OpenAIAssistantToolResourcesModel `tfsdk:"tool_resources"`
+	Metadata      types.Map                          `tfsdk:"metadata"`
+	Temperature   types.Float64                      `tfsdk:"temperature"`
+	TopP          types.Float64                      `tfsdk:"top_p"`
 }
 
 func (e OpenAIAssistantResourceModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":           types.StringType,
-		"object":       types.StringType,
-		"created_at":   types.Int64Type,
-		"name":         types.StringType,
-		"description":  types.StringType,
-		"model":        types.StringType,
-		"instructions": types.StringType,
-		"file_ids":     types.ListType{ElemType: types.StringType},
-		"tools":        types.ListType{ElemType: types.ObjectType{AttrTypes: OpenAIAssistantToolModel{}.AttrTypes()}},
-		"metadata":     types.MapType{ElemType: types.StringType},
+		"id":             types.StringType,
+		"object":         types.StringType,
+		"created_at":     types.Int64Type,
+		"name":           types.StringType,
+		"description":    types.StringType,
+		"model":          types.StringType,
+		"instructions":   types.StringType,
+		"tools":          types.ListType{ElemType: types.ObjectType{AttrTypes: OpenAIAssistantToolModel{}.AttrTypes()}},
+		"tool_resources": types.ObjectType{AttrTypes: OpenAIAssistantToolResourcesModel{}.AttrTypes()},
+		"metadata":       types.MapType{ElemType: types.StringType},
+		"temperature":    types.Float64Type,
+		"top_p":          types.Float64Type,
 	}
 }
 
 func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assistant) (OpenAIAssistantResourceModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	model := OpenAIAssistantResourceModel{}
 	model.Id = types.StringValue(assistant.Id)
 	model.Object = types.StringValue(assistant.Object)
@@ -225,11 +231,11 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 	model.Model = types.StringValue(assistant.Model)
 	model.Instructions = types.StringPointerValue(assistant.Instructions)
 
-	if len(assistant.FileIds) == 0 {
-		model.FileIds = types.ListNull(types.StringType)
-	} else {
-		model.FileIds, _ = types.ListValueFrom(ctx, types.StringType, assistant.FileIds)
-	}
+	// if len(assistant.FileIds) == 0 {
+	// 	model.FileIds = types.ListNull(types.StringType)
+	// } else {
+	// 	model.FileIds, _ = types.ListValueFrom(ctx, types.StringType, assistant.FileIds)
+	// }
 
 	if len(assistant.MetaData) == 0 {
 		model.Metadata = types.MapNull(types.StringType)
@@ -257,9 +263,15 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 		}
 		tools[i] = tool
 	}
-	var diags diag.Diagnostics
-
 	model.Tools, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OpenAIAssistantToolModel{}.AttrTypes()}, tools)
+	if diags.HasError() {
+		return model, diags
+	}
+
+	if assistant.ToolResources != nil {
+		model.ToolResources = &OpenAIAssistantToolResourcesModel{}
+		// TODO: Complete this section
+	}
 	if diags.HasError() {
 		return model, diags
 	}
@@ -276,6 +288,38 @@ func (e OpenAIAssistantToolModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"type":     types.StringType,
 		"function": types.ObjectType{AttrTypes: OpenAIAssistantToolFunctionModel{}.AttrTypes()},
+	}
+}
+
+type OpenAIAssistantToolResourcesModel struct {
+	CodeInterpreter types.Object `tfsdk:"code_interpreter"`
+	FileSearch      types.Object `tfsdk:"file_search"`
+}
+
+func (e OpenAIAssistantToolResourcesModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"code_interpreter": types.ObjectType{AttrTypes: OpenAIAssistantToolResourceCodeInterpreterModel{}.AttrTypes()},
+		"file_search":      types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes()},
+	}
+}
+
+type OpenAIAssistantToolResourceCodeInterpreterModel struct {
+	FileIDs types.List `tfsdk:"file_ids"`
+}
+
+func (e OpenAIAssistantToolResourceCodeInterpreterModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"file_ids": types.ListType{ElemType: types.StringType},
+	}
+}
+
+type OpenAIAssistantToolResourceFileSearchModel struct {
+	VectorStoreIDs types.List `tfsdk:"vector_store_ids"`
+}
+
+func (e OpenAIAssistantToolResourceFileSearchModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"vector_store_ids": types.ListType{ElemType: types.StringType},
 	}
 }
 

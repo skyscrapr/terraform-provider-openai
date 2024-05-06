@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -60,18 +58,10 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 			"model": schema.StringAttribute{
 				MarkdownDescription: "ID of the model to use. You can use the List models API to see all of your available models.",
-				Optional:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+				Required:            true,
 			},
 			"instructions": schema.StringAttribute{
 				MarkdownDescription: "The system instructions that the assistant uses. The maximum length is 32768 characters.",
-				Optional:            true,
-			},
-			"file_ids": schema.ListAttribute{
-				MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
-				ElementType:         types.StringType,
 				Optional:            true,
 			},
 			"tools": schema.ListNestedAttribute{
@@ -104,10 +94,62 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 				},
 			},
+			"tool_resources": schema.SingleNestedAttribute{
+				MarkdownDescription: "A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of vector store IDs.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"code_interpreter": schema.SingleNestedAttribute{
+						MarkdownDescription: "Function definition for tools of type function.",
+						Optional:            true,
+						Attributes: map[string]schema.Attribute{
+							"file_ids": schema.ListAttribute{
+								MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
+								ElementType:         types.StringType,
+								Optional:            true,
+							},
+						},
+					},
+					"file_search": schema.SingleNestedAttribute{
+						MarkdownDescription: "Function definition for tools of type function.",
+						Optional:            true,
+						Attributes: map[string]schema.Attribute{
+							"vector_store_ids": schema.ListAttribute{
+								MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
+								ElementType:         types.StringType,
+								Optional:            true,
+							},
+							"vector_stores": schema.SingleNestedAttribute{
+								MarkdownDescription: "Function definition for tools of type function.",
+								Optional:            true,
+								Attributes: map[string]schema.Attribute{
+									"file_ids": schema.ListAttribute{
+										MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
+										ElementType:         types.StringType,
+										Optional:            true,
+									},
+									"metadata": schema.MapAttribute{
+										MarkdownDescription: "Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.",
+										ElementType:         types.StringType,
+										Optional:            true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"metadata": schema.MapAttribute{
 				MarkdownDescription: "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.",
 				ElementType:         types.StringType,
 				Optional:            true,
+			},
+			"temperature": schema.Float64Attribute{
+				MarkdownDescription: "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
+				Computed:            true,
+			},
+			"top_p": schema.Float64Attribute{
+				MarkdownDescription: "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.",
+				Computed:            true,
 			},
 		},
 	}
@@ -129,6 +171,8 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 		Name:         data.Name.ValueStringPointer(),
 		Description:  data.Description.ValueStringPointer(),
 		Instructions: data.Instructions.ValueStringPointer(),
+		Temperature:  data.Temperature.ValueFloat64(),
+		TopP:         data.TopP.ValueFloat64(),
 	}
 
 	var toolModels []OpenAIAssistantToolModel
@@ -136,12 +180,9 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	aReq.Tools = expandAssistantTools(ctx, toolModels)
 
-	resp.Diagnostics.Append(data.FileIds.ElementsAs(ctx, &aReq.FileIds, false)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	aReq.Tools = expandAssistantTools(ctx, toolModels)
+	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
 	assistant, err := r.client.Assistants().CreateAssistant(&aReq)
 	if err != nil {
@@ -187,7 +228,48 @@ func (r *AssistantResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Trace(ctx, "Update not supported.")
+	var data OpenAIAssistantResourceModel
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Info(ctx, "Updating Assistant...")
+
+	aReq := openai.AssistantRequest{
+		Model:        data.Model.ValueString(),
+		Name:         data.Name.ValueStringPointer(),
+		Description:  data.Description.ValueStringPointer(),
+		Instructions: data.Instructions.ValueStringPointer(),
+		Temperature:  data.Temperature.ValueFloat64(),
+		TopP:         data.TopP.ValueFloat64(),
+	}
+
+	var toolModels []OpenAIAssistantToolModel
+	resp.Diagnostics.Append(data.Tools.ElementsAs(ctx, &toolModels, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	aReq.Tools = expandAssistantTools(ctx, toolModels)
+	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
+
+	assistant, err := r.client.Assistants().ModifyAssistant(&aReq)
+	if err != nil {
+		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to modify assistant, got error: %s", err))
+		return
+	}
+	tflog.Info(ctx, "Assistant modified successfully")
+
+	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *AssistantResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -237,4 +319,14 @@ func expandAssistantTools(ctx context.Context, tfList []OpenAIAssistantToolModel
 	}
 
 	return tools
+}
+
+func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToolResourcesModel) *openai.AssistantToolResources {
+	if model == nil {
+		return nil
+	}
+	toolResources := &openai.AssistantToolResources{}
+	model.CodeInterpreter.As(ctx, toolResources.CodeInterpreter, basetypes.ObjectAsOptions{})
+	model.FileSearch.As(ctx, toolResources.FileSearch, basetypes.ObjectAsOptions{})
+	return toolResources
 }

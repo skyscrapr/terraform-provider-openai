@@ -27,6 +27,13 @@ func TestAccAssistantResource(t *testing.T) {
 					resource.TestCheckResourceAttr(assistantResourceName, "instructions", "You are a personal math tutor. When asked a question, write and run Python code to answer the question."),
 				),
 			},
+			// Update and Read testing
+			{
+				Config: testAccAssistantResourceConfig(rName, "test description updated"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(assistantResourceName, "description", "test description updated"),
+				),
+			},
 			// ImportState testing
 			{
 				ResourceName:      assistantResourceName,
@@ -38,13 +45,6 @@ func TestAccAssistantResource(t *testing.T) {
 				// the upstream service, this can be removed.
 				// ImportStateVerifyIgnore: []string{"wait"},
 			},
-			// Update and Read testing
-			// {
-			// 	Config: testAccAssistantResourceConfig(rName, "test description updated"),
-			// 	Check: resource.ComposeAggregateTestCheckFunc(
-			// 		resource.TestCheckResourceAttr(assistantResourceName, "description", "test description updated"),
-			// 	),
-			// },
 			// Delete testing automatically occurs in TestCase
 		},
 	})
