@@ -54,3 +54,9 @@ Documentation can be found on the [Terraform Registry](https://registry.terrafor
 ## Examples
 
 Please see the [examples](https://github.com/skyscrapr/terraform-provider-openai/examples) for example usage.
+
+## Support
+
+If you want to support my work then
+
+<a href="https://www.buymeacoffee.com/skyscrapr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
