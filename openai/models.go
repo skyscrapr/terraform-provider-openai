@@ -231,12 +231,6 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 	model.Model = types.StringValue(assistant.Model)
 	model.Instructions = types.StringPointerValue(assistant.Instructions)
 
-	// if len(assistant.FileIds) == 0 {
-	// 	model.FileIds = types.ListNull(types.StringType)
-	// } else {
-	// 	model.FileIds, _ = types.ListValueFrom(ctx, types.StringType, assistant.FileIds)
-	// }
-
 	if len(assistant.MetaData) == 0 {
 		model.Metadata = types.MapNull(types.StringType)
 	} else {
@@ -270,8 +264,39 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 
 	if assistant.ToolResources != nil {
 		model.ToolResources = &OpenAIAssistantToolResourcesModel{}
-		model.ToolResources.CodeInterpreter, _ = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceCodeInterpreterModel{}.AttrTypes(), assistant.ToolResources.CodeInterpreter)
-		model.ToolResources.FileSearch, _ = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes(), assistant.ToolResources.FileSearch)
+		if assistant.ToolResources.CodeInterpreter == nil {
+			model.ToolResources.CodeInterpreter = types.ObjectNull(OpenAIAssistantToolResourceCodeInterpreterModel{}.AttrTypes())
+		} else {
+			codeInterpreter := &OpenAIAssistantToolResourceCodeInterpreterModel{}
+			codeInterpreter.FileIDs, diags = types.ListValueFrom(ctx, types.StringType, assistant.ToolResources.CodeInterpreter.FileIDs)
+			if diags.HasError() {
+				return model, diags
+			}
+			model.ToolResources.CodeInterpreter, diags = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceCodeInterpreterModel{}.AttrTypes(), codeInterpreter)
+		}
+		if assistant.ToolResources.FileSearch == nil {
+			model.ToolResources.FileSearch = types.ObjectNull(OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes())
+		} else {
+			fileSearch := &OpenAIAssistantToolResourceFileSearchModel{}
+			fileSearch.VectorStoreIDs, diags = types.ListValueFrom(ctx, types.StringType, assistant.ToolResources.FileSearch.VectorStoreIDs)
+			if diags.HasError() {
+				return model, diags
+			}
+			if assistant.ToolResources.FileSearch.VectorStores == nil {
+				fileSearch.VectorStores = types.ObjectNull(OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes())
+			} else {
+				vectorStores := &OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
+				vectorStores.FileIDs, diags = types.ListValueFrom(ctx, types.StringType, assistant.ToolResources.FileSearch.VectorStores.FileIDs)
+				if diags.HasError() {
+					return model, diags
+				}
+				vectorStores.MetaData, diags = types.MapValueFrom(ctx, types.StringType, assistant.ToolResources.FileSearch.VectorStores.MetaData)
+				if diags.HasError() {
+					return model, diags
+				}
+			}
+			model.ToolResources.FileSearch, diags = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes(), fileSearch)
+		}
 	}
 	if diags.HasError() {
 		return model, diags
@@ -315,12 +340,26 @@ func (e OpenAIAssistantToolResourceCodeInterpreterModel) AttrTypes() map[string]
 }
 
 type OpenAIAssistantToolResourceFileSearchModel struct {
-	VectorStoreIDs types.List `tfsdk:"vector_store_ids"`
+	VectorStoreIDs types.List   `tfsdk:"vector_store_ids"`
+	VectorStores   types.Object `tfsdk:"vector_stores"`
 }
 
 func (e OpenAIAssistantToolResourceFileSearchModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"vector_store_ids": types.ListType{ElemType: types.StringType},
+		"vector_stores":    types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()},
+	}
+}
+
+type OpenAIAssistantToolResourceFileSearchVectorStoresModel struct {
+	FileIDs  types.List `tfsdk:"file_ids"`
+	MetaData types.Map  `tfsdk:"metadata"`
+}
+
+func (e OpenAIAssistantToolResourceFileSearchVectorStoresModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"file_ids": types.ListType{ElemType: types.StringType},
+		"metadata": types.MapType{ElemType: types.StringType},
 	}
 }
 

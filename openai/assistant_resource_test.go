@@ -18,7 +18,7 @@ func TestAccAssistantResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccAssistantResourceConfig(rName, "test description"),
+				Config: testAccAssistantResourceConfig("./test-fixtures/test.jsonl", rName, "test description"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(assistantResourceName, "id"),
 					resource.TestCheckResourceAttr(assistantResourceName, "name", rName),
@@ -29,7 +29,7 @@ func TestAccAssistantResource(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccAssistantResourceConfig(rName, "test description updated"),
+				Config: testAccAssistantResourceConfig("./test-fixtures/test.jsonl", rName, "test description updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(assistantResourceName, "description", "test description updated"),
 				),
@@ -50,16 +50,27 @@ func TestAccAssistantResource(t *testing.T) {
 	})
 }
 
-func testAccAssistantResourceConfig(rName string, description string) string {
+func testAccAssistantResourceConfig(filename string, rName string, description string) string {
 	return fmt.Sprintf(`	
-resource "openai_assistant" "test" {
-	name = %[1]q
-	description = %[2]q
+resource openai_file test {
+	filepath = %[1]q
+}
+
+resource openai_assistant test {
+	name = %[2]q
+	description = %[3]q
 	model = "gpt-4"
 	instructions = "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
 	tools = [
 		{type = "code_interpreter"}
 	]
+	tool_resources = {
+		code_interpreter = {
+			file_ids = [
+				openai_file.test.id,
+			]
+		}
+	}
 }
-`, rName, description)
+`, filename, rName, description)
 }

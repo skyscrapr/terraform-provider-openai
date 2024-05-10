@@ -326,7 +326,39 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		return nil
 	}
 	toolResources := &openai.AssistantToolResources{}
-	model.CodeInterpreter.As(ctx, toolResources.CodeInterpreter, basetypes.ObjectAsOptions{})
-	model.FileSearch.As(ctx, toolResources.FileSearch, basetypes.ObjectAsOptions{})
+	if !model.CodeInterpreter.IsNull() {
+		toolResources.CodeInterpreter = &struct {
+			FileIDs []string "json:\"file_ids\""
+		}{}
+		codeInterpreter := OpenAIAssistantToolResourceCodeInterpreterModel{}
+		model.CodeInterpreter.As(ctx, &codeInterpreter, basetypes.ObjectAsOptions{})
+		codeInterpreter.FileIDs.ElementsAs(ctx, &toolResources.CodeInterpreter.FileIDs, false)
+	}
+	if !model.FileSearch.IsNull() {
+		toolResources.FileSearch = &struct {
+			VectorStoreIDs []string "json:\"vector_store_ids\""
+			VectorStores   *struct {
+				FileIDs  []string          "json:\"file_ids\""
+				MetaData map[string]string "json:\"metadata,omitempty\""
+			} "json:\"vector_stores,omitempty\""
+		}{}
+
+		fileSearch := OpenAIAssistantToolResourceFileSearchModel{}
+		model.FileSearch.As(ctx, &fileSearch, basetypes.ObjectAsOptions{})
+		fileSearch.VectorStoreIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStoreIDs, false)
+
+		if !fileSearch.VectorStores.IsNull() {
+			toolResources.FileSearch.VectorStores = &struct {
+				FileIDs  []string          "json:\"file_ids\""
+				MetaData map[string]string "json:\"metadata,omitempty\""
+			}{}
+			vectorStores := OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
+			fileSearch.VectorStores.As(ctx, &vectorStores, basetypes.ObjectAsOptions{})
+			// vectorStore.FileIDs
+			// toolResources.FileSearch.VectorStore.FileIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStore.FileIDs, false)
+		}
+	}
+	// model.CodeInterpreter.As(ctx, toolResources.CodeInterpreter, basetypes.ObjectAsOptions{})
+	// model.FileSearch.As(ctx, toolResources.FileSearch, basetypes.ObjectAsOptions{})
 	return toolResources
 }
