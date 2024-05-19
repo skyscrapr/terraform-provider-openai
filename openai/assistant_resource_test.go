@@ -13,7 +13,7 @@ func TestAccAssistantResource_tool_code_interpreter(t *testing.T) {
 	assistantResourceName := "openai_assistant.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccOpenAI(t); testAccPreCheck(t) },
+		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
@@ -55,7 +55,7 @@ func TestAccAssistantResource_tool_function(t *testing.T) {
 	assistantResourceName := "openai_assistant.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccOpenAI(t); testAccPreCheck(t) },
+		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
