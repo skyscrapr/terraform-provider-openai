@@ -2,8 +2,10 @@ package openai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -181,7 +183,13 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	aReq.Tools = expandAssistantTools(ctx, toolModels)
+	var diags diag.Diagnostics
+	aReq.Tools, diags = expandAssistantTools(toolModels)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
 	assistant, err := r.client.Assistants().CreateAssistant(&aReq)
@@ -191,7 +199,7 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 	}
 	tflog.Info(ctx, "Assistant created successfully")
 
-	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	data, diags = NewOpenAIAssistantResourceModel(ctx, assistant)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -253,7 +261,13 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	aReq.Tools = expandAssistantTools(ctx, toolModels)
+	var diags diag.Diagnostics
+	aReq.Tools, diags = expandAssistantTools(toolModels)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
 	assistant, err := r.client.Assistants().ModifyAssistant(&aReq)
@@ -263,7 +277,7 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	tflog.Info(ctx, "Assistant modified successfully")
 
-	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	data, diags = NewOpenAIAssistantResourceModel(ctx, assistant)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -304,9 +318,11 @@ func (r *AssistantResource) ImportState(ctx context.Context, req resource.Import
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func expandAssistantTools(ctx context.Context, tfList []OpenAIAssistantToolModel) []openai.AssistantTool {
+func expandAssistantTools(tfList []OpenAIAssistantToolModel) ([]openai.AssistantTool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if len(tfList) == 0 {
-		return nil
+		return nil, diags
 	}
 	var tools []openai.AssistantTool
 
@@ -314,11 +330,26 @@ func expandAssistantTools(ctx context.Context, tfList []OpenAIAssistantToolModel
 		tool := openai.AssistantTool{
 			Type: item.Type.ValueString(),
 		}
-		item.Function.As(ctx, tool.Function, basetypes.ObjectAsOptions{})
+		if item.Function != nil {
+			tool.Function = &struct {
+				Description *string                "json:\"description,omitempty\""
+				Name        string                 "json:\"name\""
+				Parameters  map[string]interface{} "json:\"parameters\""
+			}{
+				Description: item.Function.Description.ValueStringPointer(),
+				Name:        *item.Function.Name.ValueStringPointer(),
+			}
+			if !item.Function.Parameters.IsNull() {
+				// Unmarshal the JSON string into the struct
+				err := json.Unmarshal([]byte(item.Function.Parameters.ValueString()), &tool.Function.Parameters)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+		}
 		tools = append(tools, tool)
 	}
-
-	return tools
+	return tools, diags
 }
 
 func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToolResourcesModel) *openai.AssistantToolResources {

@@ -2,6 +2,7 @@ package openai
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -243,17 +244,19 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 			Type: types.StringValue(t.Type),
 		}
 
-		if t.Function == nil {
-			tool.Function = types.ObjectNull(OpenAIAssistantToolFunctionModel{}.AttrTypes())
-		} else {
+		if t.Function != nil {
+			parameters, err := json.Marshal(t.Function.Parameters)
+			if err != nil {
+				return model, diags
+			}
 			f := OpenAIAssistantToolFunctionModel{
 				Name:       types.StringValue(t.Function.Name),
-				Parameters: types.StringValue(t.Function.Parameters),
+				Parameters: types.StringValue(string(parameters)),
 			}
 			if t.Function.Description != nil {
 				f.Description = types.StringPointerValue(t.Function.Description)
 			}
-			tool.Function, _ = types.ObjectValueFrom(ctx, OpenAIAssistantToolFunctionModel{}.AttrTypes(), f)
+			tool.Function = &f
 		}
 		tools[i] = tool
 	}
@@ -262,7 +265,7 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 		return model, diags
 	}
 
-	if assistant.ToolResources != nil {
+	if assistant.ToolResources != nil && (assistant.ToolResources.CodeInterpreter != nil || assistant.ToolResources.FileSearch != nil) {
 		model.ToolResources = &OpenAIAssistantToolResourcesModel{}
 		if assistant.ToolResources.CodeInterpreter == nil {
 			model.ToolResources.CodeInterpreter = types.ObjectNull(OpenAIAssistantToolResourceCodeInterpreterModel{}.AttrTypes())
@@ -306,8 +309,9 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 }
 
 type OpenAIAssistantToolModel struct {
-	Type     types.String `tfsdk:"type"`
-	Function types.Object `tfsdk:"function"`
+	Type     types.String                      `tfsdk:"type"`
+	Function *OpenAIAssistantToolFunctionModel `tfsdk:"function"`
+	// Function types.Object `tfsdk:"function"`
 }
 
 func (e OpenAIAssistantToolModel) AttrTypes() map[string]attr.Type {
