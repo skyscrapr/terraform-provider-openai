@@ -257,7 +257,7 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	aReq.Tools = expandAssistantTools(toolModels)
 	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
-	assistant, err := r.client.Assistants().ModifyAssistant(&aReq)
+	assistant, err := r.client.Assistants().ModifyAssistant(data.Id.ValueString(), &aReq)
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to modify assistant, got error: %s", err))
 		return
