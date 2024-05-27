@@ -241,7 +241,7 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("Updating Assistant: %s", data.Id.ValueString()))
+	tflog.Info(ctx, fmt.Sprintf("Updating Assistant: %s", state.Id.ValueString()))
 
 	aReq := openai.AssistantRequest{
 		Model:        data.Model.ValueString(),
