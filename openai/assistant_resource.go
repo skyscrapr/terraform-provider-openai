@@ -233,11 +233,15 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
+	var state OpenAIAssistantResourceModel
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Info(ctx, "Updating Assistant...")
+	tflog.Info(ctx, "Updating Assistant: %s", state.Id.ValueString())
 
 	aReq := openai.AssistantRequest{
 		Model:        data.Model.ValueString(),
@@ -257,7 +261,7 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	aReq.Tools = expandAssistantTools(toolModels)
 	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
-	assistant, err := r.client.Assistants().ModifyAssistant(data.Id.ValueString(), &aReq)
+	assistant, err := r.client.Assistants().ModifyAssistant(state.Id.ValueString(), &aReq)
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to modify assistant, got error: %s", err))
 		return
