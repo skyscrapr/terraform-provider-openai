@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -118,20 +121,30 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 								MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
 								ElementType:         types.StringType,
 								Optional:            true,
+								Computed:            true,
+								PlanModifiers: []planmodifier.List{
+									listplanmodifier.RequiresReplace(),
+								},
 							},
-							"vector_stores": schema.SingleNestedAttribute{
+							"vector_stores": schema.ListNestedAttribute{
 								MarkdownDescription: "Function definition for tools of type function.",
 								Optional:            true,
-								Attributes: map[string]schema.Attribute{
-									"file_ids": schema.ListAttribute{
-										MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
-										ElementType:         types.StringType,
-										Optional:            true,
-									},
-									"metadata": schema.MapAttribute{
-										MarkdownDescription: "Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.",
-										ElementType:         types.StringType,
-										Optional:            true,
+								Computed:            true,
+								PlanModifiers: []planmodifier.List{
+									listplanmodifier.RequiresReplace(),
+								},
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"file_ids": schema.ListAttribute{
+											MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
+											ElementType:         types.StringType,
+											Optional:            true,
+										},
+										"metadata": schema.MapAttribute{
+											MarkdownDescription: "Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.",
+											ElementType:         types.StringType,
+											Optional:            true,
+										},
 									},
 								},
 							},
@@ -158,6 +171,8 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 
 func (r *AssistantResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data OpenAIAssistantResourceModel
+	var diags diag.Diagnostics
+
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -183,7 +198,11 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	aReq.Tools = expandAssistantTools(toolModels)
-	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
+	aReq.ToolResources, diags = expandAssistantToolResources(ctx, data.ToolResources)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	assistant, err := r.client.Assistants().CreateAssistant(&aReq)
 	if err != nil {
@@ -192,7 +211,7 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 	}
 	tflog.Info(ctx, "Assistant created successfully")
 
-	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	data, diags = NewOpenAIAssistantResourceModel(ctx, assistant)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -230,6 +249,8 @@ func (r *AssistantResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data OpenAIAssistantResourceModel
+	var diags diag.Diagnostics
+
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -259,7 +280,11 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	aReq.Tools = expandAssistantTools(toolModels)
-	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
+	aReq.ToolResources, diags = expandAssistantToolResources(ctx, data.ToolResources)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	assistant, err := r.client.Assistants().ModifyAssistant(state.Id.ValueString(), &aReq)
 	if err != nil {
@@ -268,7 +293,7 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	tflog.Info(ctx, "Assistant modified successfully")
 
-	data, diags := NewOpenAIAssistantResourceModel(ctx, assistant)
+	data, diags = NewOpenAIAssistantResourceModel(ctx, assistant)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -341,9 +366,10 @@ func expandAssistantTools(tfList []OpenAIAssistantToolModel) []openai.AssistantT
 	return tools
 }
 
-func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToolResourcesModel) *openai.AssistantToolResources {
+func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToolResourcesModel) (*openai.AssistantToolResources, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	if model == nil {
-		return nil
+		return nil, nil
 	}
 	toolResources := &openai.AssistantToolResources{}
 	if !model.CodeInterpreter.IsNull() {
@@ -357,7 +383,7 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 	if !model.FileSearch.IsNull() {
 		toolResources.FileSearch = &struct {
 			VectorStoreIDs []string "json:\"vector_store_ids\""
-			VectorStores   *struct {
+			VectorStores   []struct {
 				FileIDs  []string          "json:\"file_ids\""
 				MetaData map[string]string "json:\"metadata,omitempty\""
 			} "json:\"vector_stores,omitempty\""
@@ -368,17 +394,31 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		fileSearch.VectorStoreIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStoreIDs, false)
 
 		if !fileSearch.VectorStores.IsNull() {
-			toolResources.FileSearch.VectorStores = &struct {
+			toolResources.FileSearch.VectorStores = []struct {
 				FileIDs  []string          "json:\"file_ids\""
 				MetaData map[string]string "json:\"metadata,omitempty\""
 			}{}
-			vectorStores := OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
-			fileSearch.VectorStores.As(ctx, &vectorStores, basetypes.ObjectAsOptions{})
-			// vectorStore.FileIDs
-			// toolResources.FileSearch.VectorStore.FileIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStore.FileIDs, false)
+			vectorStoresModel := []OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
+			diags = fileSearch.VectorStores.ElementsAs(ctx, &vectorStoresModel, false)
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			for i, v := range vectorStoresModel {
+				toolResources.FileSearch.VectorStores = append(toolResources.FileSearch.VectorStores, struct {
+					FileIDs  []string          "json:\"file_ids\""
+					MetaData map[string]string "json:\"metadata,omitempty\""
+				}{})
+				diags = v.FileIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStores[i].FileIDs, false)
+				if diags.HasError() {
+					return nil, diags
+				}
+				diags = v.MetaData.ElementsAs(ctx, &toolResources.FileSearch.VectorStores[i].MetaData, false)
+				if diags.HasError() {
+					return nil, diags
+				}
+			}
 		}
 	}
-	// model.CodeInterpreter.As(ctx, toolResources.CodeInterpreter, basetypes.ObjectAsOptions{})
-	// model.FileSearch.As(ctx, toolResources.FileSearch, basetypes.ObjectAsOptions{})
-	return toolResources
+	return toolResources, diags
 }

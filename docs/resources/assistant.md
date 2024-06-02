@@ -80,7 +80,7 @@ Optional:
 Optional:
 
 - `vector_store_ids` (List of String) A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.
-- `vector_stores` (Attributes) Function definition for tools of type function. (see [below for nested schema](#nestedatt--tool_resources--file_search--vector_stores))
+- `vector_stores` (Attributes List) Function definition for tools of type function. (see [below for nested schema](#nestedatt--tool_resources--file_search--vector_stores))
 
 <a id="nestedatt--tool_resources--file_search--vector_stores"></a>
 ### Nested Schema for `tool_resources.file_search.vector_stores`

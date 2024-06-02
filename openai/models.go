@@ -285,15 +285,24 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 			if diags.HasError() {
 				return model, diags
 			}
+
 			if assistant.ToolResources.FileSearch.VectorStores == nil {
-				fileSearch.VectorStores = types.ObjectNull(OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes())
+				fileSearch.VectorStores = types.ListNull(types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()})
 			} else {
-				vectorStores := &OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
-				vectorStores.FileIDs, diags = types.ListValueFrom(ctx, types.StringType, assistant.ToolResources.FileSearch.VectorStores.FileIDs)
-				if diags.HasError() {
-					return model, diags
+				var vectorStores = make([]OpenAIAssistantToolResourceFileSearchVectorStoresModel, len(assistant.ToolResources.FileSearch.VectorStores))
+				for i, v := range vectorStores {
+					vectorStore := OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
+					vectorStore.FileIDs, diags = types.ListValueFrom(ctx, types.StringType, v.FileIDs)
+					if diags.HasError() {
+						return model, diags
+					}
+					vectorStore.MetaData, diags = types.MapValueFrom(ctx, types.StringType, v.MetaData)
+					if diags.HasError() {
+						return model, diags
+					}
+					vectorStores[i] = vectorStore
 				}
-				vectorStores.MetaData, diags = types.MapValueFrom(ctx, types.StringType, assistant.ToolResources.FileSearch.VectorStores.MetaData)
+				fileSearch.VectorStores, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()}, vectorStores)
 				if diags.HasError() {
 					return model, diags
 				}
@@ -311,7 +320,6 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 type OpenAIAssistantToolModel struct {
 	Type     types.String                      `tfsdk:"type"`
 	Function *OpenAIAssistantToolFunctionModel `tfsdk:"function"`
-	// Function types.Object `tfsdk:"function"`
 }
 
 func (e OpenAIAssistantToolModel) AttrTypes() map[string]attr.Type {
@@ -344,14 +352,15 @@ func (e OpenAIAssistantToolResourceCodeInterpreterModel) AttrTypes() map[string]
 }
 
 type OpenAIAssistantToolResourceFileSearchModel struct {
-	VectorStoreIDs types.List   `tfsdk:"vector_store_ids"`
-	VectorStores   types.Object `tfsdk:"vector_stores"`
+	VectorStoreIDs types.List `tfsdk:"vector_store_ids"`
+	VectorStores   types.List `tfsdk:"vector_stores"`
 }
 
 func (e OpenAIAssistantToolResourceFileSearchModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"vector_store_ids": types.ListType{ElemType: types.StringType},
-		"vector_stores":    types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()},
+		"vector_stores":    types.ListType{ElemType: types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()}},
+		// "vector_stores":    types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()},
 	}
 }
 
@@ -378,5 +387,114 @@ func (e OpenAIAssistantToolFunctionModel) AttrTypes() map[string]attr.Type {
 		"description": types.StringType,
 		"name":        types.StringType,
 		"parameters":  types.StringType,
+	}
+}
+
+// OpenAIVectorStoreModel describes the OpenAI vector store model.
+type OpenAIVectorStoreModel struct {
+	Id           types.String             `tfsdk:"id"`
+	Object       types.String             `tfsdk:"object"`
+	CreatedAt    types.Int64              `tfsdk:"created_at"`
+	Name         types.String             `tfsdk:"name"`
+	FileIDs      types.List               `tfsdk:"file_ids"`
+	UsageBytes   types.Int64              `tfsdk:"usage_bytes"`
+	FileCounts   types.Object             `tfsdk:"file_counts"`
+	Status       types.String             `tfsdk:"status"`
+	ExpiresAfter *OpenAIExpiresAfterModel `tfsdk:"expires_after"`
+	ExpiresAt    types.Int64              `tfsdk:"expires_at"`
+	LastActiveAt types.Int64              `tfsdk:"last_active_at"`
+	Metadata     types.Map                `tfsdk:"metadata"`
+}
+
+func (e OpenAIVectorStoreModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":             types.StringType,
+		"object":         types.StringType,
+		"created_at":     types.Int64Type,
+		"name":           types.StringType,
+		"usage_bytes":    types.Int64Type,
+		"file_counts":    types.ObjectType{AttrTypes: OpenAIFileCountsModel{}.AttrTypes()},
+		"status":         types.StringType,
+		"expires_after":  types.ObjectType{AttrTypes: OpenAIExpiresAfterModel{}.AttrTypes()},
+		"expires_at":     types.Int64Type,
+		"last_active_at": types.Int64Type,
+		"metadata":       types.MapType{ElemType: types.StringType},
+	}
+}
+
+func NewOpenAIVectoreStoreModel(ctx context.Context, vs *openai.VectorStore, data *OpenAIVectorStoreModel) (OpenAIVectorStoreModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	model := OpenAIVectorStoreModel{
+		Id:         types.StringValue(vs.Id),
+		Object:     types.StringValue(vs.Object),
+		CreatedAt:  types.Int64Value(vs.CreatedAt),
+		Name:       types.StringValue(vs.Name),
+		UsageBytes: types.Int64Value(vs.UsageBytes),
+		// FileCounts:
+		Status: types.StringValue(vs.Status),
+		// ExpiresAfter:
+		ExpiresAt:    types.Int64Value(vs.ExpiresAt),
+		LastActiveAt: types.Int64Value(vs.LastActiveAt),
+	}
+	model.FileIDs, diags = types.ListValueFrom(ctx, types.StringType, data.FileIDs)
+	if diags.HasError() {
+		return model, diags
+	}
+
+	if vs.FileCounts == nil {
+		model.FileCounts = types.ObjectNull(OpenAIFileCountsModel{}.AttrTypes())
+	} else {
+		fileCounts := &OpenAIFileCountsModel{
+			InProgress: types.Int64Value(vs.FileCounts.InProgress),
+			Completed:  types.Int64Value(vs.FileCounts.Completed),
+			Failed:     types.Int64Value(vs.FileCounts.Failed),
+			Cancelled:  types.Int64Value(vs.FileCounts.Cancelled),
+			Total:      types.Int64Value(vs.FileCounts.Total),
+		}
+		model.FileCounts, diags = types.ObjectValueFrom(ctx, OpenAIFileCountsModel{}.AttrTypes(), fileCounts)
+		if diags.HasError() {
+			return model, diags
+		}
+	}
+
+	if len(vs.Metadata) == 0 {
+		model.Metadata = types.MapNull(types.StringType)
+	} else {
+		model.Metadata, _ = types.MapValueFrom(ctx, types.StringType, vs.Metadata)
+	}
+
+	return model, diags
+}
+
+// OpenAIFileCountsModel
+type OpenAIFileCountsModel struct {
+	InProgress types.Int64 `tfsdk:"in_progress"`
+	Completed  types.Int64 `tfsdk:"completed"`
+	Failed     types.Int64 `tfsdk:"failed"`
+	Cancelled  types.Int64 `tfsdk:"cancelled"`
+	Total      types.Int64 `tfsdk:"total"`
+}
+
+func (e OpenAIFileCountsModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"in_progress": types.Int64Type,
+		"completed":   types.Int64Type,
+		"failed":      types.Int64Type,
+		"cancelled":   types.Int64Type,
+		"total":       types.Int64Type,
+	}
+}
+
+// OpenAIExpiresAfterModel
+type OpenAIExpiresAfterModel struct {
+	Anchor types.String `tfsdk:"anchor"`
+	Days   types.Int64  `tfsdk:"days"`
+}
+
+func (e OpenAIExpiresAfterModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"anchor": types.StringType,
+		"days":   types.Int64Type,
 	}
 }

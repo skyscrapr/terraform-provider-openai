@@ -82,6 +82,7 @@ func (p *OpenAIProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewAssistantResource,
 		NewFileResource,
 		NewFineTuningJobResource,
+		NewVectorStoreResource,
 	}
 }
 
