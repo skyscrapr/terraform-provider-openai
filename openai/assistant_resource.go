@@ -176,11 +176,7 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	aReq.Tools = expandAssistantTools(toolModels)
-	aReq.ToolResources, diags = expandAssistantToolResources(ctx, data.ToolResources)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
 	assistant, err := r.client.Assistants().CreateAssistant(&aReq)
 	if err != nil {
@@ -258,11 +254,7 @@ func (r *AssistantResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	aReq.Tools = expandAssistantTools(toolModels)
-	aReq.ToolResources, diags = expandAssistantToolResources(ctx, data.ToolResources)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
 
 	assistant, err := r.client.Assistants().ModifyAssistant(state.Id.ValueString(), &aReq)
 	if err != nil {
@@ -344,10 +336,9 @@ func expandAssistantTools(tfList []OpenAIAssistantToolModel) []openai.AssistantT
 	return tools
 }
 
-func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToolResourcesModel) (*openai.AssistantToolResources, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToolResourcesModel) *openai.AssistantToolResources {
 	if model == nil {
-		return nil, nil
+		return nil
 	}
 	toolResources := &openai.AssistantToolResources{}
 	if !model.CodeInterpreter.IsNull() {
@@ -371,5 +362,5 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		model.FileSearch.As(ctx, &fileSearch, basetypes.ObjectAsOptions{})
 		fileSearch.VectorStoreIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStoreIDs, false)
 	}
-	return toolResources, diags
+	return toolResources
 }

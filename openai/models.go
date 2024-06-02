@@ -442,7 +442,6 @@ func NewOpenAIVectoreStoreModel(ctx context.Context, vs *openai.VectorStore, dat
 	return model, diags
 }
 
-// OpenAIFileCountsModel
 type OpenAIFileCountsModel struct {
 	InProgress types.Int64 `tfsdk:"in_progress"`
 	Completed  types.Int64 `tfsdk:"completed"`
@@ -461,7 +460,6 @@ func (e OpenAIFileCountsModel) AttrTypes() map[string]attr.Type {
 	}
 }
 
-// OpenAIExpiresAfterModel
 type OpenAIExpiresAfterModel struct {
 	Anchor types.String `tfsdk:"anchor"`
 	Days   types.Int64  `tfsdk:"days"`
