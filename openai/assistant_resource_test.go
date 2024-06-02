@@ -107,13 +107,13 @@ func TestAccAssistantResource_file_search(t *testing.T) {
 					resource.TestCheckResourceAttrSet(assistantResourceName, "id"),
 					resource.TestCheckResourceAttr(assistantResourceName, "name", rName),
 					resource.TestCheckResourceAttr(assistantResourceName, "description", "test description"),
-					resource.TestCheckResourceAttr(assistantResourceName, "model", "gpt-4"),
-					resource.TestCheckResourceAttr(assistantResourceName, "instructions", "You are the personal assistant for users who are using our app."),
+					resource.TestCheckResourceAttr(assistantResourceName, "model", "gpt-3.5-turbo"),
+					resource.TestCheckResourceAttr(assistantResourceName, "instructions", "You are a personal math tutor. When asked a question, write and run Python code to answer the question."),
 				),
 			},
 			// Update and Read testing
 			{
-				Config: testAccAssistantResourceConfig_tool_file_search("./test-fixtures/test.jsonl", rName, "test description updated"),
+				Config: testAccAssistantResourceConfig_tool_file_search("./test-fixtures/test.json", rName, "test description updated"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(assistantResourceName, "description", "test description updated"),
 				),
@@ -189,6 +189,13 @@ resource openai_file test {
 	filepath = %[1]q
 }
 
+resource openai_vector_store test {
+	name  = %[2]q
+	file_ids = [
+		openai_file.test.id,
+	]
+}
+
 resource openai_assistant test {
 	name = %[2]q
 	description = %[3]q
@@ -199,12 +206,8 @@ resource openai_assistant test {
 	]
 	tool_resources = {
 		file_search = {
-			vector_stores = [
-				{
-					file_ids = [
-						openai_file.test.id,
-					]
-				},	
+			vector_store_ids = [
+				openai_vector_store.test.id,
 			]
 		}
 	}

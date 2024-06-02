@@ -126,28 +126,6 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 									listplanmodifier.RequiresReplace(),
 								},
 							},
-							"vector_stores": schema.ListNestedAttribute{
-								MarkdownDescription: "Function definition for tools of type function.",
-								Optional:            true,
-								Computed:            true,
-								PlanModifiers: []planmodifier.List{
-									listplanmodifier.RequiresReplace(),
-								},
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"file_ids": schema.ListAttribute{
-											MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
-											ElementType:         types.StringType,
-											Optional:            true,
-										},
-										"metadata": schema.MapAttribute{
-											MarkdownDescription: "Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.",
-											ElementType:         types.StringType,
-											Optional:            true,
-										},
-									},
-								},
-							},
 						},
 					},
 				},
@@ -392,33 +370,6 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		fileSearch := OpenAIAssistantToolResourceFileSearchModel{}
 		model.FileSearch.As(ctx, &fileSearch, basetypes.ObjectAsOptions{})
 		fileSearch.VectorStoreIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStoreIDs, false)
-
-		if !fileSearch.VectorStores.IsNull() {
-			toolResources.FileSearch.VectorStores = []struct {
-				FileIDs  []string          "json:\"file_ids\""
-				MetaData map[string]string "json:\"metadata,omitempty\""
-			}{}
-			vectorStoresModel := []OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
-			diags = fileSearch.VectorStores.ElementsAs(ctx, &vectorStoresModel, false)
-			if diags.HasError() {
-				return nil, diags
-			}
-
-			for i, v := range vectorStoresModel {
-				toolResources.FileSearch.VectorStores = append(toolResources.FileSearch.VectorStores, struct {
-					FileIDs  []string          "json:\"file_ids\""
-					MetaData map[string]string "json:\"metadata,omitempty\""
-				}{})
-				diags = v.FileIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStores[i].FileIDs, false)
-				if diags.HasError() {
-					return nil, diags
-				}
-				diags = v.MetaData.ElementsAs(ctx, &toolResources.FileSearch.VectorStores[i].MetaData, false)
-				if diags.HasError() {
-					return nil, diags
-				}
-			}
-		}
 	}
 	return toolResources, diags
 }

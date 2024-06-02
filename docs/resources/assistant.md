@@ -80,16 +80,6 @@ Optional:
 Optional:
 
 - `vector_store_ids` (List of String) A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.
-- `vector_stores` (Attributes List) Function definition for tools of type function. (see [below for nested schema](#nestedatt--tool_resources--file_search--vector_stores))
-
-<a id="nestedatt--tool_resources--file_search--vector_stores"></a>
-### Nested Schema for `tool_resources.file_search.vector_stores`
-
-Optional:
-
-- `file_ids` (List of String) A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.
-- `metadata` (Map of String) Set of 16 key-value pairs that can be attached to a vector store. This can be useful for storing additional information about the vector store in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
-
 
 
 

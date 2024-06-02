@@ -285,28 +285,6 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 			if diags.HasError() {
 				return model, diags
 			}
-
-			if assistant.ToolResources.FileSearch.VectorStores == nil {
-				fileSearch.VectorStores = types.ListNull(types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()})
-			} else {
-				var vectorStores = make([]OpenAIAssistantToolResourceFileSearchVectorStoresModel, len(assistant.ToolResources.FileSearch.VectorStores))
-				for i, v := range vectorStores {
-					vectorStore := OpenAIAssistantToolResourceFileSearchVectorStoresModel{}
-					vectorStore.FileIDs, diags = types.ListValueFrom(ctx, types.StringType, v.FileIDs)
-					if diags.HasError() {
-						return model, diags
-					}
-					vectorStore.MetaData, diags = types.MapValueFrom(ctx, types.StringType, v.MetaData)
-					if diags.HasError() {
-						return model, diags
-					}
-					vectorStores[i] = vectorStore
-				}
-				fileSearch.VectorStores, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()}, vectorStores)
-				if diags.HasError() {
-					return model, diags
-				}
-			}
 			model.ToolResources.FileSearch, diags = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes(), fileSearch)
 		}
 	}
@@ -353,14 +331,11 @@ func (e OpenAIAssistantToolResourceCodeInterpreterModel) AttrTypes() map[string]
 
 type OpenAIAssistantToolResourceFileSearchModel struct {
 	VectorStoreIDs types.List `tfsdk:"vector_store_ids"`
-	VectorStores   types.List `tfsdk:"vector_stores"`
 }
 
 func (e OpenAIAssistantToolResourceFileSearchModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"vector_store_ids": types.ListType{ElemType: types.StringType},
-		"vector_stores":    types.ListType{ElemType: types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()}},
-		// "vector_stores":    types.ObjectType{AttrTypes: OpenAIAssistantToolResourceFileSearchVectorStoresModel{}.AttrTypes()},
 	}
 }
 
