@@ -161,7 +161,7 @@ func (r *VectorStoreResource) Create(ctx context.Context, req resource.CreateReq
 		if err != nil {
 			return retry.NonRetryableError(err)
 		}
-		if vectorStore.FileCounts.InProgress != 0 {
+		if vectorStore == nil || vectorStore.FileCounts.InProgress != 0 {
 			return retry.RetryableError(fmt.Errorf("file processing still in progress"))
 		}
 		return nil

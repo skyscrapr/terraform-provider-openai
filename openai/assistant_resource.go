@@ -105,11 +105,13 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 					"code_interpreter": schema.SingleNestedAttribute{
 						MarkdownDescription: "Function definition for tools of type function.",
 						Optional:            true,
+						Computed:            true,
 						Attributes: map[string]schema.Attribute{
 							"file_ids": schema.ListAttribute{
 								MarkdownDescription: "A list of file IDs attached to this assistant. There can be a maximum of 20 files attached to the assistant. Files are ordered by their creation date in ascending order.",
 								ElementType:         types.StringType,
 								Optional:            true,
+								Computed:            true,
 							},
 						},
 					},
@@ -341,7 +343,7 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		return nil
 	}
 	toolResources := &openai.AssistantToolResources{}
-	if !model.CodeInterpreter.IsNull() {
+	if !model.CodeInterpreter.IsNull() && !model.CodeInterpreter.IsUnknown() {
 		toolResources.CodeInterpreter = &struct {
 			FileIDs []string "json:\"file_ids\""
 		}{}
@@ -349,7 +351,7 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		model.CodeInterpreter.As(ctx, &codeInterpreter, basetypes.ObjectAsOptions{})
 		codeInterpreter.FileIDs.ElementsAs(ctx, &toolResources.CodeInterpreter.FileIDs, false)
 	}
-	if !model.FileSearch.IsNull() {
+	if !model.FileSearch.IsNull() && !model.FileSearch.IsUnknown() {
 		toolResources.FileSearch = &struct {
 			VectorStoreIDs []string "json:\"vector_store_ids\""
 			VectorStores   []struct {
