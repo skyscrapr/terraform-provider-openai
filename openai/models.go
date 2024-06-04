@@ -238,31 +238,35 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 		model.Metadata, _ = types.MapValueFrom(ctx, types.StringType, assistant.MetaData)
 	}
 
-	var tools = make([]OpenAIAssistantToolModel, len(assistant.Tools))
-	for i, t := range assistant.Tools {
-		tool := OpenAIAssistantToolModel{
-			Type: types.StringValue(t.Type),
-		}
+	if len(assistant.Tools) == 0 {
+		model.Tools = types.ListNull(types.ObjectType{AttrTypes: OpenAIAssistantToolModel{}.AttrTypes()})
+	} else {
+		var tools = make([]OpenAIAssistantToolModel, len(assistant.Tools))
+		for i, t := range assistant.Tools {
+			tool := OpenAIAssistantToolModel{
+				Type: types.StringValue(t.Type),
+			}
 
-		if t.Function != nil {
-			parameters, err := json.Marshal(t.Function.Parameters)
-			if err != nil {
-				return model, diags
+			if t.Function != nil {
+				parameters, err := json.Marshal(t.Function.Parameters)
+				if err != nil {
+					return model, diags
+				}
+				f := OpenAIAssistantToolFunctionModel{
+					Name:       types.StringValue(t.Function.Name),
+					Parameters: types.StringValue(string(parameters)),
+				}
+				if t.Function.Description != nil {
+					f.Description = types.StringPointerValue(t.Function.Description)
+				}
+				tool.Function = &f
 			}
-			f := OpenAIAssistantToolFunctionModel{
-				Name:       types.StringValue(t.Function.Name),
-				Parameters: types.StringValue(string(parameters)),
-			}
-			if t.Function.Description != nil {
-				f.Description = types.StringPointerValue(t.Function.Description)
-			}
-			tool.Function = &f
+			tools[i] = tool
 		}
-		tools[i] = tool
-	}
-	model.Tools, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OpenAIAssistantToolModel{}.AttrTypes()}, tools)
-	if diags.HasError() {
-		return model, diags
+		model.Tools, diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: OpenAIAssistantToolModel{}.AttrTypes()}, tools)
+		if diags.HasError() {
+			return model, diags
+		}
 	}
 
 	if assistant.ToolResources != nil && (assistant.ToolResources.CodeInterpreter != nil || assistant.ToolResources.FileSearch != nil) {
