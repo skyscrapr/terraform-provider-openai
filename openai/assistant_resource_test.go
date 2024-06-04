@@ -281,14 +281,13 @@ resource openai_assistant test {
 func testAccAssistantResourceConfig_tool_file_search(filename string, rName string, description string) string {
 	return fmt.Sprintf(`	
 resource openai_file test {
+	count = 20
 	filepath = %[1]q
 }
 
 resource openai_vector_store test {
 	name  = %[2]q
-	file_ids = [
-		openai_file.test.id,
-	]
+	file_ids = openai_file.test.*.id
 }
 
 resource openai_assistant test {
