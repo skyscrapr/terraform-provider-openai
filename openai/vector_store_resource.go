@@ -155,6 +155,10 @@ func (r *VectorStoreResource) Create(ctx context.Context, req resource.CreateReq
 	createTimeout := 1 * time.Hour
 
 	vectorStore, err := r.client.VectorStores().CreateVectorStore(&vsReq)
+	if err != nil {
+		resp.Diagnostics.AddError("CreateVectorStore", fmt.Sprintf("got error: %s", err))
+		return
+	}
 
 	err = retry.RetryContext(ctx, createTimeout, func() *retry.RetryError {
 		vectorStore, err = r.client.VectorStores().RetrieveVectorStore(vectorStore.Id)
@@ -167,7 +171,7 @@ func (r *VectorStoreResource) Create(ctx context.Context, req resource.CreateReq
 		return nil
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("CreateVectorStore", fmt.Sprintf("got error: %s", err))
+		resp.Diagnostics.AddError("CreateVectorStore", fmt.Sprintf("got error retrieving vector while waiting for files: %s", err))
 		return
 	}
 	if vectorStore.FileCounts.Completed != vectorStore.FileCounts.Total {
