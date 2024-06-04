@@ -231,6 +231,8 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 	model.Description = types.StringPointerValue(assistant.Description)
 	model.Model = types.StringValue(assistant.Model)
 	model.Instructions = types.StringPointerValue(assistant.Instructions)
+	model.Temperature = types.Float64Value(assistant.Temperature)
+	model.TopP = types.Float64Value(assistant.TopP)
 
 	if len(assistant.MetaData) == 0 {
 		model.Metadata = types.MapNull(types.StringType)

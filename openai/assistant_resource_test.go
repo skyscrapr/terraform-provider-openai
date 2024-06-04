@@ -342,6 +342,7 @@ resource openai_assistant test {
 			]
 		}
 	}
+	temperature = 1.0
 }
 `, filename, rName, description)
 }
