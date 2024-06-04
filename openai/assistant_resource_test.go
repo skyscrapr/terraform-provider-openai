@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/YakDriver/regexache"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -170,6 +171,23 @@ func TestAccAssistantResource_file_search(t *testing.T) {
 				// Once the Read method is able to refresh information from
 				// the upstream service, this can be removed.
 				// ImportStateVerifyIgnore: []string{"wait"},
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAssistantResource_file_search_badfiletype(t *testing.T) {
+	rName := acctest.RandomWithPrefix("openai_tf_test_")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config:      testAccAssistantResourceConfig_tool_file_search("./test-fixtures/test.xlsx", rName, "test description"),
+				ExpectError: regexache.MustCompile("Error running apply: exit status 1"),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
