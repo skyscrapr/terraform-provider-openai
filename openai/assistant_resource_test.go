@@ -204,7 +204,7 @@ func TestAccAssistantResource_complex(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccAssistantResourceConfig_tool_complex("./test-fixtures/test.json", rName, "test description"),
+				Config: testAccAssistantResourceConfig_tool_complex("./test-fixtures/test.json", rName, "test description", "1.0"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(assistantResourceName, "id"),
 					resource.TestCheckResourceAttr(assistantResourceName, "name", rName),
@@ -215,7 +215,7 @@ func TestAccAssistantResource_complex(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccAssistantResourceConfig_tool_complex("./test-fixtures/test.json", rName, "test description updated"),
+				Config: testAccAssistantResourceConfig_tool_complex("./test-fixtures/test.json", rName, "test description updated", "0.9"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(assistantResourceName, "description", "test description updated"),
 				),
@@ -327,7 +327,7 @@ resource openai_assistant test {
 `, filename, rName, description)
 }
 
-func testAccAssistantResourceConfig_tool_complex(filename string, rName string, description string) string {
+func testAccAssistantResourceConfig_tool_complex(filename string, rName string, description string, temperature string) string {
 	return fmt.Sprintf(`	
 resource openai_file test {
 	filepath = %[1]q
@@ -360,7 +360,7 @@ resource openai_assistant test {
 			]
 		}
 	}
-	temperature = 1.0
+	temperature = %[4]q
 }
-`, filename, rName, description)
+`, filename, rName, description, temperature)
 }
