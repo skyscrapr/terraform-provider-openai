@@ -13,7 +13,7 @@ require (
 // replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
 
 require (
-	github.com/YakDriver/regexache v0.23.0
+	github.com/YakDriver/regexache v0.24.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/skyscrapr/openai-sdk-go v0.0.0-20240823045514-49a5f0342716
 )
