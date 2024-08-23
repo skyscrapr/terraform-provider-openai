@@ -47,6 +47,7 @@ resource "openai_assistant" "test" {
 - `instructions` (String) The system instructions that the assistant uses. The maximum length is 32768 characters.
 - `metadata` (Map of String) Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maxium of 512 characters long.
 - `name` (String) The name of the assistant. The maximum length is 256 characters.
+- `response_format` (Attributes) Specifies the format that the model must output. Compatible with GPT-4o, GPT-4 Turbo, and all GPT-3.5 Turbo models since gpt-3.5-turbo-1106. (see [below for nested schema](#nestedatt--response_format))
 - `temperature` (Number) What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
 - `tool_resources` (Attributes) A set of resources that are used by the assistant's tools. The resources are specific to the type of tool. For example, the code_interpreter tool requires a list of file IDs, while the file_search tool requires a list of vector store IDs. (see [below for nested schema](#nestedatt--tool_resources))
 - `tools` (Attributes List) A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function. (see [below for nested schema](#nestedatt--tools))
@@ -57,6 +58,32 @@ resource "openai_assistant" "test" {
 - `created_at` (Number) The Unix timestamp (in seconds) for when the assistant was created.
 - `id` (String) The identifier, which can be referenced in API endpoints.
 - `object` (String) The object type, which is always assistant.
+
+<a id="nestedatt--response_format"></a>
+### Nested Schema for `response_format`
+
+Required:
+
+- `type` (String) Setting to {"type": "json_schema", "json_schema": {...} } enables Structured Outputs which ensures the model will match your supplied JSON schema. Setting to { "type": "json_object" } enables JSON mode, which ensures the message the model generates is valid JSON.
+
+Optional:
+
+- `json_schema` (Attributes) Specifies the format that the model must output. Compatible with GPT-4o, GPT-4 Turbo, and all GPT-3.5 Turbo models since gpt-3.5-turbo-1106. (see [below for nested schema](#nestedatt--response_format--json_schema))
+
+<a id="nestedatt--response_format--json_schema"></a>
+### Nested Schema for `response_format.json_schema`
+
+Required:
+
+- `name` (String) The parameters the functions accepts, described as a JSON Schema object.
+- `schema` (String) The schema for the response format, described as a JSON Schema object.
+
+Optional:
+
+- `description` (String) A description of what the response format is for, used by the model to determine how to respond in the format.
+- `strict` (Boolean) Whether to enable strict schema adherence when generating the output. If set to true, the model will always follow the exact schema defined in the schema field. Only a subset of JSON Schema is supported when strict is true.
+
+
 
 <a id="nestedatt--tool_resources"></a>
 ### Nested Schema for `tool_resources`

@@ -15,7 +15,7 @@ require (
 require (
 	github.com/YakDriver/regexache v0.23.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/skyscrapr/openai-sdk-go v0.0.0-20240602031318-bc747dad6f21
+	github.com/skyscrapr/openai-sdk-go v0.0.0-20240823045514-49a5f0342716
 )
 
 require (

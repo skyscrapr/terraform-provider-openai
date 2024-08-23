@@ -190,18 +190,19 @@ func (e OpenAIFineTuningJobHyperparamsModel) AttrTypes() map[string]attr.Type {
 }
 
 type OpenAIAssistantResourceModel struct {
-	Id            types.String                       `tfsdk:"id"`
-	Object        types.String                       `tfsdk:"object"`
-	CreatedAt     types.Int64                        `tfsdk:"created_at"`
-	Name          types.String                       `tfsdk:"name"`
-	Description   types.String                       `tfsdk:"description"`
-	Model         types.String                       `tfsdk:"model"`
-	Instructions  types.String                       `tfsdk:"instructions"`
-	Tools         types.List                         `tfsdk:"tools"`
-	ToolResources *OpenAIAssistantToolResourcesModel `tfsdk:"tool_resources"`
-	Metadata      types.Map                          `tfsdk:"metadata"`
-	Temperature   types.Float64                      `tfsdk:"temperature"`
-	TopP          types.Float64                      `tfsdk:"top_p"`
+	Id             types.String                        `tfsdk:"id"`
+	Object         types.String                        `tfsdk:"object"`
+	CreatedAt      types.Int64                         `tfsdk:"created_at"`
+	Name           types.String                        `tfsdk:"name"`
+	Description    types.String                        `tfsdk:"description"`
+	Model          types.String                        `tfsdk:"model"`
+	Instructions   types.String                        `tfsdk:"instructions"`
+	Tools          types.List                          `tfsdk:"tools"`
+	ToolResources  *OpenAIAssistantToolResourcesModel  `tfsdk:"tool_resources"`
+	Metadata       types.Map                           `tfsdk:"metadata"`
+	Temperature    types.Float64                       `tfsdk:"temperature"`
+	TopP           types.Float64                       `tfsdk:"top_p"`
+	ResponseFormat *OpenAIAssistantResponseFormatModel `tfsdk:"response_format"`
 }
 
 func (e OpenAIAssistantResourceModel) AttrTypes() map[string]attr.Type {
@@ -292,6 +293,26 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 				return model, diags
 			}
 			model.ToolResources.FileSearch, diags = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes(), fileSearch)
+		}
+	}
+	if assistant.ResponseFormat != nil && assistant.ResponseFormat.StringValue != "auto" {
+		model.ResponseFormat = &OpenAIAssistantResponseFormatModel{
+			Type: types.StringValue(assistant.ResponseFormat.Type),
+		}
+		if assistant.ResponseFormat.JsonSchema != nil {
+
+			schema, err := json.Marshal(assistant.ResponseFormat.JsonSchema.Schema)
+			if err != nil {
+				return model, diags
+			}
+			model.ResponseFormat.JsonSchema = &OpenAIAssistantResponseJsonSchemaModel{
+				Name:   types.StringValue(assistant.ResponseFormat.JsonSchema.Name),
+				Schema: types.StringValue(string(schema)),
+				Strict: types.BoolValue(assistant.ResponseFormat.JsonSchema.Strict),
+			}
+			if assistant.ResponseFormat.JsonSchema.Description != nil {
+				model.ResponseFormat.JsonSchema.Description = types.StringPointerValue(assistant.ResponseFormat.JsonSchema.Description)
+			}
 		}
 	}
 	if diags.HasError() {
@@ -475,5 +496,33 @@ func (e OpenAIExpiresAfterModel) AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"anchor": types.StringType,
 		"days":   types.Int64Type,
+	}
+}
+
+type OpenAIAssistantResponseFormatModel struct {
+	Type       types.String                            `tfsdk:"type"`
+	JsonSchema *OpenAIAssistantResponseJsonSchemaModel `tfsdk:"json_schema"`
+}
+
+func (e OpenAIAssistantResponseFormatModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"type":        types.StringType,
+		"json_schema": types.ObjectType{AttrTypes: OpenAIAssistantResponseJsonSchemaModel{}.AttrTypes()},
+	}
+}
+
+type OpenAIAssistantResponseJsonSchemaModel struct {
+	Description types.String `tfsdk:"description"`
+	Name        types.String `tfsdk:"name"`
+	Schema      types.String `tfsdk:"schema"`
+	Strict      types.Bool   `tfsdk:"strict"`
+}
+
+func (e OpenAIAssistantResponseJsonSchemaModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"description": types.StringType,
+		"name":        types.StringType,
+		"schema":      types.StringType,
+		"strict":      types.BoolType,
 	}
 }
