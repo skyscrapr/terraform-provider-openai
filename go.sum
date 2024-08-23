@@ -181,6 +181,8 @@ github.com/skyscrapr/openai-sdk-go v0.0.0-20240822221726-5354d38a8866 h1:uR7GBhs
 github.com/skyscrapr/openai-sdk-go v0.0.0-20240822221726-5354d38a8866/go.mod h1:FsqF4u4OHs6BFjFuQavyHuqI8eWDt68fdLvfP/gXns8=
 github.com/skyscrapr/openai-sdk-go v0.0.0-20240823015705-cff9ecf4bdac h1:MDqIUI4lGp3O+prNEgHcY4+LaoXpQd0epqWhO6DC3FE=
 github.com/skyscrapr/openai-sdk-go v0.0.0-20240823015705-cff9ecf4bdac/go.mod h1:FsqF4u4OHs6BFjFuQavyHuqI8eWDt68fdLvfP/gXns8=
+github.com/skyscrapr/openai-sdk-go v0.0.0-20240823045514-49a5f0342716 h1:fL2FtWsH++5CAF3cnOuLL/un1FkLj1nI4iJIqVj8gYs=
+github.com/skyscrapr/openai-sdk-go v0.0.0-20240823045514-49a5f0342716/go.mod h1:FsqF4u4OHs6BFjFuQavyHuqI8eWDt68fdLvfP/gXns8=
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
 github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155UU=

@@ -295,7 +295,7 @@ func NewOpenAIAssistantResourceModel(ctx context.Context, assistant *openai.Assi
 			model.ToolResources.FileSearch, diags = types.ObjectValueFrom(ctx, OpenAIAssistantToolResourceFileSearchModel{}.AttrTypes(), fileSearch)
 		}
 	}
-	if assistant.ResponseFormat != nil {
+	if assistant.ResponseFormat != nil && assistant.ResponseFormat.StringValue != "auto" {
 		model.ResponseFormat = &OpenAIAssistantResponseFormatModel{
 			Type: types.StringValue(assistant.ResponseFormat.Type),
 		}
