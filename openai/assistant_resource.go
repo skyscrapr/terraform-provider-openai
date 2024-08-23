@@ -147,6 +147,39 @@ func (r *AssistantResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:            true,
 				Computed:            true,
 			},
+			"response_format": schema.SingleNestedAttribute{
+				MarkdownDescription: "Specifies the format that the model must output. Compatible with GPT-4o, GPT-4 Turbo, and all GPT-3.5 Turbo models since gpt-3.5-turbo-1106.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						MarkdownDescription: "Setting to {\"type\": \"json_schema\", \"json_schema\": {...} } enables Structured Outputs which ensures the model will match your supplied JSON schema. Setting to { \"type\": \"json_object\" } enables JSON mode, which ensures the message the model generates is valid JSON.",
+						Required:            true,
+					},
+					"json_schema": schema.SingleNestedAttribute{
+						MarkdownDescription: "Specifies the format that the model must output. Compatible with GPT-4o, GPT-4 Turbo, and all GPT-3.5 Turbo models since gpt-3.5-turbo-1106.",
+						Optional:            true,
+						Attributes: map[string]schema.Attribute{
+							"description": schema.StringAttribute{
+								MarkdownDescription: "A description of what the response format is for, used by the model to determine how to respond in the format.",
+								Optional:            true,
+							},
+							"name": schema.StringAttribute{
+								MarkdownDescription: "The parameters the functions accepts, described as a JSON Schema object.",
+								Required:            true,
+							},
+							"schema": schema.StringAttribute{
+								MarkdownDescription: "The schema for the response format, described as a JSON Schema object.",
+								Required:            true,
+							},
+							"strict": schema.BoolAttribute{
+								MarkdownDescription: "Whether to enable strict schema adherence when generating the output. If set to true, the model will always follow the exact schema defined in the schema field. Only a subset of JSON Schema is supported when strict is true.",
+								Optional:            true,
+								// default false
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -181,6 +214,7 @@ func (r *AssistantResource) Create(ctx context.Context, req resource.CreateReque
 
 	aReq.Tools = expandAssistantTools(toolModels)
 	aReq.ToolResources = expandAssistantToolResources(ctx, data.ToolResources)
+	aReq.ResponseFormat = expandAssistantResponseFormat(data.ResponseFormat)
 
 	assistant, err := r.client.Assistants().CreateAssistant(&aReq)
 	if err != nil {
@@ -367,4 +401,33 @@ func expandAssistantToolResources(ctx context.Context, model *OpenAIAssistantToo
 		fileSearch.VectorStoreIDs.ElementsAs(ctx, &toolResources.FileSearch.VectorStoreIDs, false)
 	}
 	return toolResources
+}
+
+func expandAssistantResponseFormat(model *OpenAIAssistantResponseFormatModel) *openai.AssistantResponseFormat {
+	if model == nil {
+		return nil
+	}
+	responseFormat := &openai.AssistantResponseFormat{
+		Type: model.Type.ValueString(),
+	}
+	if model.JsonSchema != nil {
+		responseFormat.JsonSchema = &struct {
+			Description *string                `json:"description,omitempty"`
+			Name        string                 `json:"name"`
+			Schema      map[string]interface{} `json:"schema"`
+			Strict      bool                   `json:"strict,omitempty"`
+		}{
+			Description: model.JsonSchema.Description.ValueStringPointer(),
+			Name:        model.JsonSchema.Name.ValueString(),
+			Strict:      model.JsonSchema.Strict.ValueBool(),
+		}
+		if !model.JsonSchema.Schema.IsNull() {
+			// Unmarshal the JSON string into the struct
+			err := json.Unmarshal([]byte(model.JsonSchema.Schema.ValueString()), &responseFormat.JsonSchema.Schema)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+	return responseFormat
 }

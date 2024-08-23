@@ -194,6 +194,62 @@ func TestAccAssistantResource_file_search_badfiletype(t *testing.T) {
 	})
 }
 
+func TestAccAssistantResource_response_format_json_object(t *testing.T) {
+	rName := acctest.RandomWithPrefix("openai_tf_test_")
+	assistantResourceName := "openai_assistant.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccAssistantResourceConfig_response_format_json_object(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(assistantResourceName, "id"),
+					resource.TestCheckResourceAttr(assistantResourceName, "name", rName),
+					resource.TestCheckResourceAttr(assistantResourceName, "response_format.type", "json_object"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      assistantResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAssistantResource_response_format_json_schema(t *testing.T) {
+	rName := acctest.RandomWithPrefix("openai_tf_test_")
+	assistantResourceName := "openai_assistant.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccAssistantResourceConfig_response_format_json_schema(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(assistantResourceName, "id"),
+					resource.TestCheckResourceAttr(assistantResourceName, "name", rName),
+					resource.TestCheckResourceAttr(assistantResourceName, "response_format.type", "json_schema"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      assistantResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccAssistantResource_complex(t *testing.T) {
 	rName := acctest.RandomWithPrefix("openai_tf_test_")
 	assistantResourceName := "openai_assistant.test"
@@ -363,4 +419,44 @@ resource openai_assistant test {
 	temperature = %[4]q
 }
 `, filename, rName, description, temperature)
+}
+
+func testAccAssistantResourceConfig_response_format_json_object(rName string) string {
+	return fmt.Sprintf(`	
+resource openai_assistant test {
+	name = %[1]q
+	description = "test description"
+	model = "gpt-4"
+	instructions = "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
+	response_format = {
+		type = "json_object"
+	}
+}
+`, rName)
+}
+
+func testAccAssistantResourceConfig_response_format_json_schema(rName string) string {
+	return fmt.Sprintf(`	
+resource openai_assistant test {
+	name = %[1]q
+	description = "test description"
+	model = "gpt-4o-mini"
+	instructions = "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
+	response_format = {
+		type = "json_schema"
+		json_schema = {
+            name = "math_response"
+            schema = jsonencode({
+                type = "object"
+                properties = {
+                    final_answer = {type = "string"}
+                }
+                required = ["final_answer"]
+                additionalProperties = false
+			})
+            strict = true
+        }
+	}
+}
+`, rName)
 }
