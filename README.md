@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/skyscrapr/terraform-provider-openai)](https://goreportcard.com/report/github.com/skyscrapr/terraform-provider-openai)
 ![Github Actions Workflow](https://github.com/skyscrapr/terraform-provider-openai/actions/workflows/test.yml/badge.svg)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/skyscrapr/terraform-provider-openai)
-[![License](https://img.shields.io/dub/l/vibe-d.svg)
+![License](https://img.shields.io/dub/l/vibe-d.svg)
 
 ## Requirements
 
@@ -15,7 +15,7 @@
 
 The provider is registered in the official [terraform registry](https://registry.terraform.io/providers/skyscrapr/openai/latest) 
 
-This enables the provider to be auto-installed when you run ```terraform init```
+This enables the provider to be auto-installed when you run ```terraform init``` as long as there is a valid provider definition in the terraform config. See [Usage](https://github.com/skyscrapr/terraform-provider-openai?tab=readme-ov-file#usage)
 
 You can also download the latest binary for your target platform from the [releases](https://github.com/skyscrapr/terraform-provider-openai/releases) tab.
 
@@ -28,14 +28,14 @@ You can also download the latest binary for your target platform from the [relea
     $ git clone https://github.com/skyscrapr/terraform-provider-openai
     ```
 
-- Build the provider: (NOTE: the install directory will be set accoring to GOPATH environment variable)
+- Build the provider: (NOTE: the install directory will be set according to GOPATH environment variable)
     ```sh
     $ go install .
     ```
 
 ## Usage
 
-You can enable the provider in your terraform configurtion by add the folowing:
+You can enable the provider in your terraform configuration by add the folowing:
 ```terraform
 terraform {
   required_providers {
