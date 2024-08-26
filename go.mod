@@ -10,7 +10,7 @@ require (
 )
 
 // For local development
-// replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
+replace github.com/skyscrapr/openai-sdk-go => ../openai-sdk-go
 
 require (
 	github.com/YakDriver/regexache v0.24.0
