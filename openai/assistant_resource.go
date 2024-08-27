@@ -18,8 +18,8 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &FineTuningJobResource{}
-var _ resource.ResourceWithImportState = &FineTuningJobResource{}
+var _ resource.Resource = &AssistantResource{}
+var _ resource.ResourceWithImportState = &AssistantResource{}
 
 func NewAssistantResource() resource.Resource {
 	return &AssistantResource{OpenAIResource: &OpenAIResource{}}

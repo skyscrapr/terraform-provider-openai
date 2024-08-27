@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -26,7 +25,9 @@ type OpenAIProvider struct {
 
 // OpenAIProviderModel describes the provider data model.
 type OpenAIProviderModel struct {
-	ApiKey types.String `tfsdk:"api_key"`
+	ApiKey         types.String `tfsdk:"api_key"`
+	AdminKey       types.String `tfsdk:"admin_key"`
+	OrganizationID types.String `tfsdk:"organization_id"`
 }
 
 func (p *OpenAIProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -41,6 +42,14 @@ func (p *OpenAIProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 				Optional:  true,
 				Sensitive: true,
 			},
+			"admin_key": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+			},
+			"organization_id": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+			},
 		},
 	}
 }
@@ -50,12 +59,11 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	if data.ApiKey.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("api_key"),
-			"Unknown OpenAI Authorization Token",
+	if data.ApiKey.IsUnknown() && data.AdminKey.IsUnknown() {
+		resp.Diagnostics.AddError(
+			"Unknown OpenAI Authorization Tokens",
 			"The provider cannot create the OpenAI API client as there is an unknown configuration value for the OpenAI API authorization token. "+
-				"Either set the value statically in the configuration, or use the OPENAI_API_KEY environment variable.",
+				"Either set the value statically in the configuration, or use the OPENAI_API_KEY or OPENAI_ADMIN_KEY environment variables.",
 		)
 	}
 
@@ -69,7 +77,17 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	if !data.ApiKey.IsNull() {
 		api_key = data.ApiKey.ValueString()
 	}
-	client := openai.NewClient(api_key)
+	admin_key := os.Getenv("OPENAI_ADMIN_KEY")
+	if !data.AdminKey.IsNull() {
+		admin_key = data.AdminKey.ValueString()
+	}
+	client := openai.NewClient(api_key, admin_key)
+
+	// organization_id := os.Getenv("OPENAI_ORGANIZATION_ID")
+	// if !data.OrganizationID.IsNull() {
+	// 	organization_id = data.OrganizationID.ValueString()
+	// }
+	// client.OrganizationID = organization_id
 
 	// Make the OpenAI client available during DataSource and Resource
 	// type Configure methods.
@@ -82,6 +100,7 @@ func (p *OpenAIProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewAssistantResource,
 		NewFileResource,
 		NewFineTuningJobResource,
+		NewProjectResource,
 		NewVectorStoreResource,
 	}
 }
@@ -94,6 +113,8 @@ func (p *OpenAIProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewFineTuningJobDataSource,
 		NewModelsDataSource,
 		NewModelDataSource,
+		NewProjectsDataSource,
+		NewProjectDataSource,
 	}
 }
 
