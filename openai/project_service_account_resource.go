@@ -53,6 +53,7 @@ func (r *ProjectServiceAccountResource) Schema(ctx context.Context, req resource
 			"role": schema.StringAttribute{
 				MarkdownDescription: "owner or member",
 				Optional:            true,
+				Computed:            true,
 			},
 			"created_at": schema.Int64Attribute{
 				MarkdownDescription: "The Unix timestamp (in seconds) of when the project was created.",
@@ -60,6 +61,7 @@ func (r *ProjectServiceAccountResource) Schema(ctx context.Context, req resource
 			},
 			"api_key": schema.SingleNestedAttribute{
 				MarkdownDescription: "A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function.",
+				Computed:            true,
 				Optional:            true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
@@ -70,10 +72,14 @@ func (r *ProjectServiceAccountResource) Schema(ctx context.Context, req resource
 						MarkdownDescription: "The object type, which is always organization.project.service_account.api_key.",
 						Computed:            true,
 					},
+					"name": schema.StringAttribute{
+						MarkdownDescription: "The name of the api_key secret.",
+						Computed:            true,
+					},
 					"value": schema.StringAttribute{
 						MarkdownDescription: "The value of the api_key secret.",
 						Computed:            true,
-						Sensitive: true,
+						Sensitive:           true,
 					},
 					"created_at": schema.Int64Attribute{
 						MarkdownDescription: "The Unix timestamp (in seconds) of when the api_key was created.",
@@ -86,10 +92,10 @@ func (r *ProjectServiceAccountResource) Schema(ctx context.Context, req resource
 }
 
 func (r *ProjectServiceAccountResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ProjectServiceAccountResourceModel
+	var plan ProjectServiceAccountModel
 
 	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -98,18 +104,21 @@ func (r *ProjectServiceAccountResource) Create(ctx context.Context, req resource
 	tflog.Info(ctx, "Creating Assistant...")
 
 	aReq := openai.ProjectServiceAccountRequest{
-		ProjectID: data.ProjectId.ValueString(),
-		Name: data.Name.ValueStringPointer(),
+		Name: plan.Name.ValueStringPointer(),
 	}
 
-	projectServiceAccount, err := r.client.Projects().CreateProjectServiceAccount(&aReq)
+	projectServiceAccount, err := r.client.Projects().CreateProjectServiceAccount(plan.ProjectId.ValueString(), &aReq)
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to create project service account, got error: %s", err))
 		return
 	}
 	tflog.Info(ctx, "Project Service Account created successfully")
-	data = NewProjectServiceAccountModel(projectServiceAccount)
-
+	data, diags := NewProjectServiceAccountModel(ctx, projectServiceAccount)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	data.ProjectId = plan.ProjectId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -130,7 +139,13 @@ func (r *ProjectServiceAccountResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	data = NewProjectServiceAccountModel(projectServiceAccount)
+	projectId := data.ProjectId
+	data, diags := NewProjectServiceAccountModel(ctx, projectServiceAccount)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	data.ProjectId = projectId
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

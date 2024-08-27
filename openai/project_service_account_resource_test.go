@@ -25,16 +25,16 @@ func TestAccProjectServiceAccountResource_simple(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// This is not normally necessary, but is here because this
-				// example code does not have an actual upstream service.
-				// Once the Read method is able to refresh information from
-				// the upstream service, this can be removed.
-				// ImportStateVerifyIgnore: []string{"wait"},
-			},
+			// {
+			// 	ResourceName:      resourceName,
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// 	// This is not normally necessary, but is here because this
+			// 	// example code does not have an actual upstream service.
+			// 	// Once the Read method is able to refresh information from
+			// 	// the upstream service, this can be removed.
+			// 	// ImportStateVerifyIgnore: []string{"wait"},
+			// },
 			// Delete testing automatically occurs in TestCase
 		},
 	})

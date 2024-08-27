@@ -177,8 +177,8 @@ github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5g
 github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
 github.com/skeema/knownhosts v1.2.2 h1:Iug2P4fLmDw9f41PB6thxUkNUkJzB5i+1/exaj40L3A=
 github.com/skeema/knownhosts v1.2.2/go.mod h1:xYbVRSPxqBZFrdmDyMmsOs+uX1UZC3nTN3ThzgDxUwo=
-github.com/skyscrapr/openai-sdk-go v0.0.0-20240824050829-0104509f9cad h1:tBODcsGEVw987W584ltNzl8gONmN0GlSDOq7cN8zvio=
-github.com/skyscrapr/openai-sdk-go v0.0.0-20240824050829-0104509f9cad/go.mod h1:FsqF4u4OHs6BFjFuQavyHuqI8eWDt68fdLvfP/gXns8=
+github.com/skyscrapr/openai-sdk-go v0.0.0-20240827022218-c2c2413fcc57 h1:xX5JSoh37qNNXYCXuU8UxZ3H3CYkGAJrmHeqrJOHOVo=
+github.com/skyscrapr/openai-sdk-go v0.0.0-20240827022218-c2c2413fcc57/go.mod h1:FsqF4u4OHs6BFjFuQavyHuqI8eWDt68fdLvfP/gXns8=
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
 github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155UU=

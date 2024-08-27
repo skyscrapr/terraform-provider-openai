@@ -25,7 +25,8 @@ type ProjectServiceAccountsDataSource struct {
 
 // ProjectServiceAccountsModel describes the data source data model.
 type ProjectServiceAccountsModel struct {
-	Id       types.String   `tfsdk:"id"`
+	Id                     types.String                 `tfsdk:"id"`
+	ProjectId              types.String                 `tfsdk:"project_id"`
 	ProjectServiceAccounts []ProjectServiceAccountModel `tfsdk:"project_service_accounts"`
 }
 
@@ -42,6 +43,10 @@ func (d *ProjectServiceAccountsDataSource) Schema(ctx context.Context, req datas
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Projects identifier",
 				Computed:            true,
+			},
+			"project_id": schema.StringAttribute{
+				MarkdownDescription: "Project identifier",
+				Required:            true,
 			},
 			"project_service_accounts": schema.ListNestedAttribute{
 				MarkdownDescription: "Project Service Accounts",
@@ -64,7 +69,7 @@ func (d *ProjectServiceAccountsDataSource) Read(ctx context.Context, req datasou
 		return
 	}
 
-	projectServiceAccounts, err := d.client.Projects().ListProjectServiceAccounts()
+	projectServiceAccounts, err := d.client.Projects().ListProjectServiceAccounts(data.ProjectId.ValueString())
 
 	if err != nil {
 		resp.Diagnostics.AddError("OpenAI Client Error", fmt.Sprintf("Unable to read Project Service Accounts, got error: %s", err))
@@ -72,7 +77,12 @@ func (d *ProjectServiceAccountsDataSource) Read(ctx context.Context, req datasou
 	}
 
 	for _, v := range projectServiceAccounts {
-		data.ProjectServiceAccounts = append(data.ProjectServiceAccounts, NewProjectServiceAccountModel(&v))
+		sa, diags := NewProjectServiceAccountModel(ctx, &v)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		data.ProjectServiceAccounts = append(data.ProjectServiceAccounts, sa)
 	}
 	data.Id = types.StringValue(strconv.FormatInt(time.Now().Unix(), 10))
 

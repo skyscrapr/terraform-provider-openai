@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/skyscrapr/openai-sdk-go/openai"
 )
@@ -24,29 +26,43 @@ type ProjectServiceAccountDataSource struct {
 
 // ProjectServiceAccountModel describes the data source data model.
 type ProjectServiceAccountModel struct {
-	Id         types.String `tfsdk:"id"`
-	ProjectId  types.String `tfsdk:"project_id"`
-	Object     types.String `tfsdk:"object"`
-	Name       types.String `tfsdk:"name"`
-	Role       types.String `tfsdk:"role"`
-	CreatedAt  types.Int64  `tfsdk:"created_at"`
+	Id        types.String `tfsdk:"id"`
+	ProjectId types.String `tfsdk:"project_id"`
+	Object    types.String `tfsdk:"object"`
+	Name      types.String `tfsdk:"name"`
+	Role      types.String `tfsdk:"role"`
+	CreatedAt types.Int64  `tfsdk:"created_at"`
+	ApiKey    types.Object `tfsdk:"api_key"`
 }
 
-type ProjectServiceAccountResourceModel struct {
-	Id         types.String `tfsdk:"id"`
-	ProjectId  types.String `tfsdk:"project_id"`
-	Object     types.String `tfsdk:"object"`
-	Name       types.String `tfsdk:"name"`
-	Role       types.String `tfsdk:"role"`
-	CreatedAt  types.Int64  `tfsdk:"created_at"`
-	ApiKey     *ProjectServiceAccountApiKeyModel `tfsdk:"api_key"`
+func (e ProjectServiceAccountModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":         types.StringType,
+		"project_id": types.StringType,
+		"object":     types.StringType,
+		"name":       types.StringType,
+		"role":       types.StringType,
+		"created_at": types.Int64Type,
+		"api_key":    types.ObjectType{AttrTypes: ProjectServiceAccountApiKeyModel{}.AttrTypes()},
+	}
 }
 
 type ProjectServiceAccountApiKeyModel struct {
-	Id         types.String `tfsdk:"id"`
-	Object     types.String `tfsdk:"object"`
-	Value       types.String `tfsdk:"role"`
-	CreatedAt  types.Int64  `tfsdk:"created_at"`  
+	Id        types.String `tfsdk:"id"`
+	Object    types.String `tfsdk:"object"`
+	Name      types.String `tfsdk:"name"`
+	Value     types.String `tfsdk:"value"`
+	CreatedAt types.Int64  `tfsdk:"created_at"`
+}
+
+func (e ProjectServiceAccountApiKeyModel) AttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":         types.StringType,
+		"object":     types.StringType,
+		"name":       types.StringType,
+		"value":      types.StringType,
+		"created_at": types.Int64Type,
+	}
 }
 
 func (d *ProjectServiceAccountDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -64,6 +80,7 @@ func (d *ProjectServiceAccountDataSource) Schema(ctx context.Context, req dataso
 
 func (d *ProjectServiceAccountDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data ProjectServiceAccountModel
+	var diags diag.Diagnostics
 
 	// Read Terraform configuration data into the project service account
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -80,20 +97,50 @@ func (d *ProjectServiceAccountDataSource) Read(ctx context.Context, req datasour
 	}
 
 	projectId := data.ProjectId
-	data = NewProjectServiceAccountModel(projectServiceAccount)
+	data, diags = NewProjectServiceAccountModel(ctx, projectServiceAccount)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	data.ProjectId = projectId
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func NewProjectServiceAccountModel(projectServiceAccount *openai.ProjectServiceAccount) ProjectServiceAccountModel {
+func NewProjectServiceAccountModel(ctx context.Context, projectServiceAccount *openai.ProjectServiceAccount) (ProjectServiceAccountModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	model := ProjectServiceAccountModel{
+		Id:        types.StringValue(projectServiceAccount.ID),
+		Object:    types.StringValue(projectServiceAccount.Object),
+		Name:      types.StringValue(projectServiceAccount.Name),
+		Role:      types.StringValue(projectServiceAccount.Role),
+		CreatedAt: types.Int64Value(projectServiceAccount.CreatedAt),
+	}
+	if projectServiceAccount.ApiKey == nil {
+		model.ApiKey = types.ObjectNull(ProjectServiceAccountApiKeyModel{}.AttrTypes())
+	} else {
+		apiKey := &ProjectServiceAccountApiKeyModel{
+			Id:        types.StringValue(projectServiceAccount.ApiKey.ID),
+			Object:    types.StringValue(projectServiceAccount.ApiKey.Object),
+			Name:      types.StringPointerValue(projectServiceAccount.ApiKey.Name),
+			Value:     types.StringValue(projectServiceAccount.ApiKey.Value),
+			CreatedAt: types.Int64Value(projectServiceAccount.ApiKey.CreatedAt),
+		}
+		model.ApiKey, diags = types.ObjectValueFrom(ctx, ProjectServiceAccountApiKeyModel{}.AttrTypes(), apiKey)
+	}
+
+	return model, diags
+}
+
+func NewProjectServiceAccountResourceModel(projectServiceAccount *openai.ProjectServiceAccount) ProjectServiceAccountModel {
 	projectServiceAccountModel := ProjectServiceAccountModel{
-		Id:         types.StringValue(projectServiceAccount.ID),
-		Object:     types.StringValue(projectServiceAccount.Object),
-		Name:       types.StringValue(projectServiceAccount.Name),
-		Role: 	    types.StringValue(projectServiceAccount.Role),
-		CreatedAt:  types.Int64Value(projectServiceAccount.CreatedAt),
+		Id:        types.StringValue(projectServiceAccount.ID),
+		Object:    types.StringValue(projectServiceAccount.Object),
+		Name:      types.StringValue(projectServiceAccount.Name),
+		Role:      types.StringValue(projectServiceAccount.Role),
+		CreatedAt: types.Int64Value(projectServiceAccount.CreatedAt),
 	}
 
 	return projectServiceAccountModel
