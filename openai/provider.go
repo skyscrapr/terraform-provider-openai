@@ -102,6 +102,7 @@ func (p *OpenAIProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewFineTuningJobResource,
 		NewProjectResource,
 		NewVectorStoreResource,
+		NewProjectServiceAccountResource,
 	}
 }
 
@@ -115,6 +116,8 @@ func (p *OpenAIProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewModelDataSource,
 		NewProjectsDataSource,
 		NewProjectDataSource,
+		NewProjectServiceAccountsDataSource,
+		NewProjectServiceAccountDataSource,
 	}
 }
 
