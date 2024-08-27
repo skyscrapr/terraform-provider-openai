@@ -24,5 +24,9 @@ func TestAccProjectServiceAccountsDataSource(t *testing.T) {
 }
 
 const testAccProjectServiceAccountsDataSourceConfig = `
-data "openai_project_service_accounts" "test" {}
+data "openai_projects" "test" {}
+
+data "openai_project_service_accounts" "test" {
+	project_id = data.openai_projects.test.projects[0].id
+}
 `

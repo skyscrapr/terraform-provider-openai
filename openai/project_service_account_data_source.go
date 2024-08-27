@@ -152,6 +152,10 @@ func openAIProjectServiceAccountAttributes() map[string]schema.Attribute {
 			MarkdownDescription: "The identifier, which can be referenced in API endpoints",
 			Required:            true,
 		},
+		"project_id": schema.StringAttribute{
+			MarkdownDescription: "The identifier, which can be referenced in API endpoints.",
+			Required:            true,
+		},
 		"object": schema.StringAttribute{
 			MarkdownDescription: "The object type, which is always organization.project.service_account",
 			Computed:            true,
@@ -167,6 +171,34 @@ func openAIProjectServiceAccountAttributes() map[string]schema.Attribute {
 		"created_at": schema.Int64Attribute{
 			MarkdownDescription: "The Unix timestamp (in seconds) of when the service account was created.",
 			Computed:            true,
+		},
+		"api_key": schema.SingleNestedAttribute{
+			MarkdownDescription: "A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function.",
+			Computed:            true,
+			Optional:            true,
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					MarkdownDescription: "The identifier, which can be referenced in API endpoints.",
+					Computed:            true,
+				},
+				"object": schema.StringAttribute{
+					MarkdownDescription: "The object type, which is always organization.project.service_account.api_key.",
+					Computed:            true,
+				},
+				"name": schema.StringAttribute{
+					MarkdownDescription: "The name of the api_key secret.",
+					Computed:            true,
+				},
+				"value": schema.StringAttribute{
+					MarkdownDescription: "The value of the api_key secret.",
+					Computed:            true,
+					Sensitive:           true,
+				},
+				"created_at": schema.Int64Attribute{
+					MarkdownDescription: "The Unix timestamp (in seconds) of when the api_key was created.",
+					Computed:            true,
+				},
+			},
 		},
 	}
 }
