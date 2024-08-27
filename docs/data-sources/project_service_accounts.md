@@ -30,6 +30,11 @@ Project Service Accounts data source
 Required:
 
 - `id` (String) The identifier, which can be referenced in API endpoints
+- `project_id` (String) The identifier, which can be referenced in API endpoints.
+
+Optional:
+
+- `api_key` (Attributes) A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function. (see [below for nested schema](#nestedatt--project_service_accounts--api_key))
 
 Read-Only:
 
@@ -37,3 +42,14 @@ Read-Only:
 - `name` (String) The name of the service account.
 - `object` (String) The object type, which is always organization.project.service_account
 - `role` (String) owner or member
+
+<a id="nestedatt--project_service_accounts--api_key"></a>
+### Nested Schema for `project_service_accounts.api_key`
+
+Read-Only:
+
+- `created_at` (Number) The Unix timestamp (in seconds) of when the api_key was created.
+- `id` (String) The identifier, which can be referenced in API endpoints.
+- `name` (String) The name of the api_key secret.
+- `object` (String) The object type, which is always organization.project.service_account.api_key.
+- `value` (String, Sensitive) The value of the api_key secret.
