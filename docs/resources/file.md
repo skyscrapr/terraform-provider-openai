@@ -33,6 +33,10 @@ resource "openai_file" "test" {
 
 - `filepath` (String) Filename
 
+### Optional
+
+- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning
+
 ### Read-Only
 
 - `bytes` (Number) File size in bytes
@@ -40,4 +44,3 @@ resource "openai_file" "test" {
 - `filename` (String) Filename
 - `id` (String) File Identifier
 - `object` (String) Object Type
-- `purpose` (String) Intended use of file. Use 'fine-tune' for Fine-tuning

@@ -51,6 +51,7 @@ func testAccVectorStoreResourceConfig(filename string, name string) string {
 	return fmt.Sprintf(`	
 resource "openai_file" "test" {
 	filepath = %[1]q
+	purpose = "assistants"
 }
 
 resource "openai_vector_store" "test" {

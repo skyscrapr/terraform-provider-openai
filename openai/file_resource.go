@@ -64,6 +64,7 @@ func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"purpose": schema.StringAttribute{
 				MarkdownDescription: "Intended use of file. Use 'fine-tune' for Fine-tuning",
 				Computed:            true,
+				Optional:            true,
 				Default:             stringdefault.StaticString("fine-tune"),
 			},
 		},
