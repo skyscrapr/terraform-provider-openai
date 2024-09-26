@@ -21,12 +21,12 @@ Represents an individual project service account.
 
 ### Optional
 
-- `api_key` (Attributes) A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function. (see [below for nested schema](#nestedatt--api_key))
 - `name` (String) The name of the service account.
 - `role` (String) owner or member
 
 ### Read-Only
 
+- `api_key` (Attributes) A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function. (see [below for nested schema](#nestedatt--api_key))
 - `created_at` (Number) The Unix timestamp (in seconds) of when the project was created.
 - `id` (String) The identifier, which can be referenced in API endpoints.
 - `object` (String) The object type, which is always organization.project.service_account
