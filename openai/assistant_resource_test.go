@@ -357,6 +357,7 @@ func testAccAssistantResourceConfig_tool_file_search(filename string, rName stri
 resource openai_file test {
 	count = 20
 	filepath = %[1]q
+	purpose = "assistants"
 }
 
 resource openai_vector_store test {
@@ -387,6 +388,7 @@ func testAccAssistantResourceConfig_tool_complex(filename string, rName string, 
 	return fmt.Sprintf(`	
 resource openai_file test {
 	filepath = %[1]q
+	purpose = "assistants"
 }
 
 resource openai_vector_store test {
