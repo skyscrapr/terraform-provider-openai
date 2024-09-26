@@ -2,6 +2,7 @@ package openai
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -22,6 +23,7 @@ func TestAccProjectServiceAccountResource_simple(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestMatchResourceAttr(resourceName, "api_key.value", regexp.MustCompile(`^sk-.*$`)),
 				),
 			},
 			// ImportState testing

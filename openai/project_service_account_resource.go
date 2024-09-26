@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/skyscrapr/openai-sdk-go/openai"
 )
@@ -62,7 +63,6 @@ func (r *ProjectServiceAccountResource) Schema(ctx context.Context, req resource
 			"api_key": schema.SingleNestedAttribute{
 				MarkdownDescription: "A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant. Tools can be of types code_interpreter, retrieval, or function.",
 				Computed:            true,
-				Optional:            true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						MarkdownDescription: "The identifier, which can be referenced in API endpoints.",
@@ -139,13 +139,11 @@ func (r *ProjectServiceAccountResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	projectId := data.ProjectId
-	data, diags := NewProjectServiceAccountModel(ctx, projectServiceAccount)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	data.ProjectId = projectId
+	data.Id = types.StringValue(projectServiceAccount.ID)
+	data.Object = types.StringValue(projectServiceAccount.Object)
+	data.Name = types.StringValue(projectServiceAccount.Name)
+	data.Role = types.StringValue(projectServiceAccount.Role)
+	data.CreatedAt = types.Int64Value(projectServiceAccount.CreatedAt)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
