@@ -53,7 +53,7 @@ Documentation can be found on the [Terraform Registry](https://registry.terrafor
 
 ## Examples
 
-Please see the [examples](https://github.com/skyscrapr/terraform-provider-openai/examples) for example usage.
+Please see the [examples](https://github.com/skyscrapr/terraform-provider-openai/tree/main/examples) for example usage.
 
 ## Support
 
