@@ -36,7 +36,11 @@ func testAccOpenAI(t *testing.T) {
 
 func TestProviderMetadata(t *testing.T) {
 	ctx := context.Background()
-	p := New("test")().(provider.Provider)
+	raw := New("test")()
+	p, ok := raw.(provider.Provider)
+	if !ok {
+		t.Fatalf("expected provider.Provider, got %T", raw)
+	}
 
 	req := provider.MetadataRequest{}
 	resp := &provider.MetadataResponse{}
@@ -49,7 +53,11 @@ func TestProviderMetadata(t *testing.T) {
 
 func TestProviderSchema(t *testing.T) {
 	ctx := context.Background()
-	p := New("test")().(provider.Provider)
+	raw := New("test")()
+	p, ok := raw.(provider.Provider)
+	if !ok {
+		t.Fatalf("expected provider.Provider, got %T", raw)
+	}
 
 	req := provider.SchemaRequest{}
 	resp := &provider.SchemaResponse{}
@@ -64,7 +72,7 @@ func TestProviderSchema(t *testing.T) {
 
 func TestConfigureClient_EnvOverride(t *testing.T) {
 	// Set env vars
-	os.Setenv("OPENAI_BASE_URL", "https://base-url")
+	t.Setenv("OPENAI_BASE_URL", "https://base-url")
 
 	data := OpenAIProviderModel{
 		ApiKey:   types.StringNull(),
@@ -72,14 +80,14 @@ func TestConfigureClient_EnvOverride(t *testing.T) {
 		BaseURL:  types.StringNull(),
 	}
 
-	client, err := configureClient(context.Background(), data)
+	client, err := configureClient(data)
 	assert.NoError(t, err)
 	assert.Equal(t, "https://base-url", client.BaseURL.String())
 }
 
 func TestConfigureClient_ConfigOverride(t *testing.T) {
 	// Set env vars
-	os.Setenv("OPENAI_BASE_URL", "https://base-url")
+	t.Setenv("OPENAI_BASE_URL", "https://base-url")
 
 	data := OpenAIProviderModel{
 		ApiKey:   types.StringNull(),
@@ -87,7 +95,7 @@ func TestConfigureClient_ConfigOverride(t *testing.T) {
 		BaseURL:  types.StringValue("https://base-url-from-config"),
 	}
 
-	client, err := configureClient(context.Background(), data)
+	client, err := configureClient(data)
 	assert.NoError(t, err)
 	assert.Equal(t, "https://base-url-from-config", client.BaseURL.String())
 }

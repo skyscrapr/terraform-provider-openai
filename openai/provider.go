@@ -73,7 +73,7 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	client, err := configureClient(ctx, data)
+	client, err := configureClient(data)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Configuration Failed", err.Error())
 		return
@@ -119,7 +119,7 @@ func New(version string) func() provider.Provider {
 	}
 }
 
-func configureClient(ctx context.Context, data OpenAIProviderModel) (*openai.Client, error) {
+func configureClient(data OpenAIProviderModel) (*openai.Client, error) {
 	api_key := os.Getenv("OPENAI_API_KEY")
 	if !data.ApiKey.IsNull() {
 		api_key = data.ApiKey.ValueString()
