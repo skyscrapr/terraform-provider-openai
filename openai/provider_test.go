@@ -1,11 +1,16 @@
 package openai
 
 import (
+	"context"
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
@@ -27,4 +32,62 @@ func testAccOpenAI(t *testing.T) {
 	if os.Getenv("TF_ACC_OPENAI") == "" {
 		t.Skipf("env var TF_ACC_OPENAI not set. Skipping acceptance test due to cost or time")
 	}
+}
+
+func TestProviderMetadata(t *testing.T) {
+	ctx := context.Background()
+	p := New("test")().(provider.Provider)
+
+	req := provider.MetadataRequest{}
+	resp := &provider.MetadataResponse{}
+
+	p.Metadata(ctx, req, resp)
+
+	assert.Equal(t, "openai", resp.TypeName)
+	assert.Equal(t, "test", resp.Version)
+}
+
+func TestProviderSchema(t *testing.T) {
+	ctx := context.Background()
+	p := New("test")().(provider.Provider)
+
+	req := provider.SchemaRequest{}
+	resp := &provider.SchemaResponse{}
+
+	p.Schema(ctx, req, resp)
+
+	assert.NotNil(t, resp.Schema)
+	assert.Contains(t, resp.Schema.Attributes, "api_key")
+	assert.Contains(t, resp.Schema.Attributes, "admin_key")
+	assert.Contains(t, resp.Schema.Attributes, "base_url")
+}
+
+func TestConfigureClient_EnvOverride(t *testing.T) {
+	// Set env vars
+	os.Setenv("OPENAI_BASE_URL", "https://base-url")
+
+	data := OpenAIProviderModel{
+		ApiKey:   types.StringNull(),
+		AdminKey: types.StringNull(),
+		BaseURL:  types.StringNull(),
+	}
+
+	client, err := configureClient(context.Background(), data)
+	assert.NoError(t, err)
+	assert.Equal(t, "https://base-url", client.BaseURL.String())
+}
+
+func TestConfigureClient_ConfigOverride(t *testing.T) {
+	// Set env vars
+	os.Setenv("OPENAI_BASE_URL", "https://base-url")
+
+	data := OpenAIProviderModel{
+		ApiKey:   types.StringNull(),
+		AdminKey: types.StringNull(),
+		BaseURL:  types.StringValue("https://base-url-from-config"),
+	}
+
+	client, err := configureClient(context.Background(), data)
+	assert.NoError(t, err)
+	assert.Equal(t, "https://base-url-from-config", client.BaseURL.String())
 }
