@@ -115,7 +115,7 @@ func New(version string) func() provider.Provider {
 	}
 }
 
-func configureClient(data OpenAIProviderModel) (*openai.Client) {
+func configureClient(data OpenAIProviderModel) *openai.Client {
 	api_key := os.Getenv("OPENAI_API_KEY")
 	if !data.ApiKey.IsNull() {
 		api_key = data.ApiKey.ValueString()
