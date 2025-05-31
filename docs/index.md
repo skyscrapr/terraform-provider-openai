@@ -31,4 +31,5 @@ provider "openai" {}
 
 - `admin_key` (String, Sensitive)
 - `api_key` (String, Sensitive)
+- `base_url` (String)
 - `organization_id` (String, Sensitive)
