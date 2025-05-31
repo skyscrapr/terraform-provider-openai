@@ -2,6 +2,7 @@ package openai
 
 import (
 	"context"
+	"net/url"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -27,6 +28,7 @@ type OpenAIProvider struct {
 type OpenAIProviderModel struct {
 	ApiKey         types.String `tfsdk:"api_key"`
 	AdminKey       types.String `tfsdk:"admin_key"`
+	BaseURL        types.String `tfsdk:"base_url"`
 	OrganizationID types.String `tfsdk:"organization_id"`
 }
 
@@ -45,6 +47,9 @@ func (p *OpenAIProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 			"admin_key": schema.StringAttribute{
 				Optional:  true,
 				Sensitive: true,
+			},
+			"base_url": schema.StringAttribute{
+				Optional: true,
 			},
 			"organization_id": schema.StringAttribute{
 				Optional:  true,
@@ -65,29 +70,14 @@ func (p *OpenAIProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			"The provider cannot create the OpenAI API client as there is an unknown configuration value for the OpenAI API authorization token. "+
 				"Either set the value statically in the configuration, or use the OPENAI_API_KEY or OPENAI_ADMIN_KEY environment variables.",
 		)
-	}
-
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Default values to environment variables, but override
-	// with Terraform configuration value if set.
-	api_key := os.Getenv("OPENAI_API_KEY")
-	if !data.ApiKey.IsNull() {
-		api_key = data.ApiKey.ValueString()
+	client, err := configureClient(ctx, data)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Configuration Failed", err.Error())
+		return
 	}
-	admin_key := os.Getenv("OPENAI_ADMIN_KEY")
-	if !data.AdminKey.IsNull() {
-		admin_key = data.AdminKey.ValueString()
-	}
-	client := openai.NewClient(api_key, admin_key)
-
-	// organization_id := os.Getenv("OPENAI_ORGANIZATION_ID")
-	// if !data.OrganizationID.IsNull() {
-	// 	organization_id = data.OrganizationID.ValueString()
-	// }
-	// client.OrganizationID = organization_id
 
 	// Make the OpenAI client available during DataSource and Resource
 	// type Configure methods.
@@ -127,4 +117,36 @@ func New(version string) func() provider.Provider {
 			version: version,
 		}
 	}
+}
+
+func configureClient(ctx context.Context, data OpenAIProviderModel) (*openai.Client, error) {
+	api_key := os.Getenv("OPENAI_API_KEY")
+	if !data.ApiKey.IsNull() {
+		api_key = data.ApiKey.ValueString()
+	}
+
+	admin_key := os.Getenv("OPENAI_ADMIN_KEY")
+	if !data.AdminKey.IsNull() {
+		admin_key = data.AdminKey.ValueString()
+	}
+
+	base_url := os.Getenv("OPENAI_BASE_URL")
+	if !data.BaseURL.IsNull() {
+		base_url = data.BaseURL.ValueString()
+	}
+
+	client := openai.NewClient(api_key, admin_key)
+	if base_url != "" {
+		if parsed, err := url.Parse(base_url); err == nil {
+			client.BaseURL = parsed
+		}
+	}
+
+	// organization_id := os.Getenv("OPENAI_ORGANIZATION_ID")
+	// if !data.OrganizationID.IsNull() {
+	// 	organization_id = data.OrganizationID.ValueString()
+	// }
+	// client.OrganizationID = organization_id
+
+	return client, nil
 }
