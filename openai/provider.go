@@ -120,6 +120,8 @@ func New(version string) func() provider.Provider {
 }
 
 func configureClient(data OpenAIProviderModel) (*openai.Client, error) {
+	var err error
+
 	api_key := os.Getenv("OPENAI_API_KEY")
 	if !data.ApiKey.IsNull() {
 		api_key = data.ApiKey.ValueString()
@@ -148,5 +150,5 @@ func configureClient(data OpenAIProviderModel) (*openai.Client, error) {
 	// }
 	// client.OrganizationID = organization_id
 
-	return client, nil
+	return client, err
 }
