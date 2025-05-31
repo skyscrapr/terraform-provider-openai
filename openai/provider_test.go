@@ -70,8 +70,7 @@ func TestConfigureClient_EnvOverride(t *testing.T) {
 		BaseURL:  types.StringNull(),
 	}
 
-	client, err := configureClient(data)
-	assert.NoError(t, err)
+	client := configureClient(data)
 	assert.Equal(t, "https://base-url", client.BaseURL.String())
 }
 
@@ -85,7 +84,6 @@ func TestConfigureClient_ConfigOverride(t *testing.T) {
 		BaseURL:  types.StringValue("https://base-url-from-config"),
 	}
 
-	client, err := configureClient(data)
-	assert.NoError(t, err)
+	client := configureClient(data)
 	assert.Equal(t, "https://base-url-from-config", client.BaseURL.String())
 }
