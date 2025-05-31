@@ -36,12 +36,7 @@ func testAccOpenAI(t *testing.T) {
 
 func TestProviderMetadata(t *testing.T) {
 	ctx := context.Background()
-	raw := New("test")()
-	p, ok := raw.(provider.Provider)
-	if !ok {
-		t.Fatalf("expected provider.Provider, got %T", raw)
-	}
-
+	p := New("test")()
 	req := provider.MetadataRequest{}
 	resp := &provider.MetadataResponse{}
 
@@ -53,12 +48,7 @@ func TestProviderMetadata(t *testing.T) {
 
 func TestProviderSchema(t *testing.T) {
 	ctx := context.Background()
-	raw := New("test")()
-	p, ok := raw.(provider.Provider)
-	if !ok {
-		t.Fatalf("expected provider.Provider, got %T", raw)
-	}
-
+	p := New("test")()
 	req := provider.SchemaRequest{}
 	resp := &provider.SchemaResponse{}
 
